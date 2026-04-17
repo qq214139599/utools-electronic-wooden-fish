@@ -11,159 +11,82 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       height: 100vh;
       overflow: hidden;
       user-select: none;
-      -webkit-app-region: drag;
+      zoom: 1;
     }
 
-    .fish-container {
+    /* 模拟菜单栏 - 可拖动区域 */
+    .menu-bar {
+      width: 100%;
+      height: 32px;
+      background: rgba(30, 30, 30, 0.6);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       display: flex;
-      flex-direction: column;
       align-items: center;
-      position: relative;
-      -webkit-app-region: no-drag;
+      justify-content: space-between;
+      padding: 0 10px;
+      -webkit-app-region: drag;
+      flex-shrink: 0;
     }
-
-    /* 木鱼 SVG */
-    .fish-svg {
-      width: 140px;
-      height: 160px;
-      cursor: pointer;
-      transition: transform 0.08s ease;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
-    }
-    .fish-svg:active { transform: scale(0.88); }
-    .fish-svg.knock { animation: knock 0.15s ease; }
-
-    @keyframes knock {
-      0% { transform: scale(1); }
-      50% { transform: scale(0.82); }
-      100% { transform: scale(1); }
-    }
-
-    /* 功德文字 */
-    .merit-text {
-      position: absolute;
-      font-size: 20px;
-      font-weight: bold;
-      pointer-events: none;
-      opacity: 0;
-      animation: floatUp 1.2s ease forwards;
-      text-shadow: 0 0 15px currentColor;
-    }
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-90px) scale(1.4); }
-    }
-
-    /* 涟漪 */
-    .ripple {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 2px solid;
-      pointer-events: none;
-      animation: rippleAnim 0.7s ease-out forwards;
-    }
-    @keyframes rippleAnim {
-      0% { transform: scale(0.4); opacity: 1; }
-      100% { transform: scale(2.5); opacity: 0; }
-    }
-
-    /* 计数器 */
-    .counter-area {
-      margin-top: 6px;
-      text-align: center;
-    }
-    .counter {
-      font-size: 26px;
-      font-weight: bold;
-      text-shadow: 0 0 15px currentColor;
-    }
-    .counter-label {
-      font-size: 10px;
-      opacity: 0.7;
-      margin-top: 1px;
-    }
-
-    /* 倒计时区域 */
-    .countdown-area {
-      margin-top: 6px;
-      text-align: center;
-      padding: 4px 12px;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.2);
-      cursor: pointer;
-      -webkit-app-region: no-drag;
-      transition: all 0.2s ease;
-      min-width: 80px;
-    }
-    .countdown-area.hidden { display: none; }
-    .countdown-area:hover { background: rgba(0,0,0,0.3); }
-    .countdown-area.editing { background: rgba(102, 126, 234, 0.3); }
-    .countdown-area.running { background: rgba(255, 100, 100, 0.2); }
-    .countdown-area.finished { animation: alarmPulse 0.5s ease infinite; }
-    @keyframes alarmPulse {
-      0%, 100% { background: rgba(255, 100, 100, 0.3); }
-      50% { background: rgba(255, 50, 50, 0.6); }
-    }
-    .countdown-display {
-      font-size: 15px;
-      font-weight: bold;
-      color: #fff;
-      font-family: 'Courier New', monospace;
-    }
-    .countdown-label {
-      font-size: 9px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 1px;
-    }
-    .countdown-input {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 15px;
-      font-weight: bold;
-      font-family: 'Courier New', monospace;
-      text-align: center;
-      width: 60px;
-      outline: none;
-    }
-    .countdown-input::placeholder { color: rgba(255,255,255,0.4); }
-
-    /* 控制按钮 */
-    .controls {
-      position: absolute;
-      top: 5px;
-      right: 5px;
+    .menu-left {
       display: flex;
-      gap: 5px;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+    .menu-icon { font-size: 14px; }
+    .menu-title {
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+    .menu-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
       -webkit-app-region: no-drag;
     }
     .ctrl-btn {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       border: none;
       cursor: pointer;
-      font-size: 11px;
-      line-height: 20px;
+      font-size: 9px;
+      line-height: 16px;
       text-align: center;
-      opacity: 0.5;
-      transition: all 0.2s;
+      opacity: 0.8;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .ctrl-btn:hover { opacity: 1; transform: scale(1.1); }
+    .ctrl-btn:hover { opacity: 1; transform: scale(1.15); }
     .btn-close { background: #ff5f57; color: #820000; }
     .btn-reset { background: #28c840; color: #006500; }
+    .btn-minimize { background: #ffbd2e; color: #825700; }
+
+    /* 内容区域 */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+      padding: 8px 0;
+    }
 
     /* 指示器 */
     .indicators {
       position: absolute;
-      top: 5px;
-      left: 5px;
+      top: 8px;
+      left: 8px;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -180,121 +103,197 @@
       display: none;
     }
     .indicator-auto.active { display: block; animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     .indicator-sound {
       background: rgba(255,255,255,0.15);
       color: #ccc;
     }
+
+    /* 木鱼 SVG */
+    .fish-svg {
+      width: 130px;
+      height: 150px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+      -webkit-app-region: no-drag;
+    }
+    .fish-svg:active { transform: scale(0.88); }
+    .fish-svg.knock { animation: knock 0.15s ease; }
+    @keyframes knock { 0% { transform: scale(1); } 50% { transform: scale(0.82); } 100% { transform: scale(1); } }
+
+    /* 功德文字 */
+    .merit-text {
+      position: absolute;
+      font-size: 20px;
+      font-weight: bold;
+      pointer-events: none;
+      opacity: 0;
+      animation: floatUp 1.2s ease forwards;
+      text-shadow: 0 0 15px currentColor;
+    }
+    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-90px) scale(1.4); } }
+
+    /* 涟漪 */
+    .ripple {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid;
+      pointer-events: none;
+      animation: rippleAnim 0.7s ease-out forwards;
+    }
+    @keyframes rippleAnim { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+
+    /* 计数器 */
+    .counter-area {
+      margin-top: 8px;
+      text-align: center;
+      -webkit-app-region: no-drag;
+    }
+    .counter { font-size: 26px; font-weight: bold; text-shadow: 0 0 15px currentColor; }
+    .counter-label { font-size: 10px; opacity: 0.7; margin-top: 1px; }
+
+    /* 倒计时区域 */
+    .countdown-area {
+      margin-top: 8px;
+      text-align: center;
+      padding: 5px 14px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: all 0.2s ease;
+      min-width: 80px;
+    }
+    .countdown-area.hidden { display: none; }
+    .countdown-area:hover { background: rgba(0,0,0,0.3); }
+    .countdown-area.editing { background: rgba(102, 126, 234, 0.3); }
+    .countdown-area.running { background: rgba(255, 100, 100, 0.2); }
+    .countdown-area.finished { animation: alarmPulse 0.5s ease infinite; }
+    @keyframes alarmPulse { 0%, 100% { background: rgba(255, 100, 100, 0.3); } 50% { background: rgba(255, 50, 50, 0.6); } }
+    .countdown-display { font-size: 15px; font-weight: bold; color: #fff; font-family: 'Courier New', monospace; }
+    .countdown-label { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+    .countdown-input {
+      background: transparent; border: none; color: #fff;
+      font-size: 15px; font-weight: bold; font-family: 'Courier New', monospace;
+      text-align: center; width: 60px; outline: none;
+    }
+    .countdown-input::placeholder { color: rgba(255,255,255,0.4); }
+
+    /* 调整大小手柄 */
+    .resize-handle {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 16px;
+      height: 16px;
+      cursor: nwse-resize;
+      -webkit-app-region: no-drag;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .resize-handle:hover { opacity: 1; }
+    .resize-handle::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid rgba(255,255,255,0.5);
+      border-bottom: 2px solid rgba(255,255,255,0.5);
+    }
   </style>
 </head>
 <body>
-  <!-- 指示器 -->
-  <div class="indicators">
-    <div class="indicator indicator-auto" id="autoIndicator">⚡ 自动</div>
-    <div class="indicator indicator-sound" id="soundIndicator">🪵 经典</div>
+  <!-- 菜单栏 - 可拖动 -->
+  <div class="menu-bar">
+    <div class="menu-left">
+      <span class="menu-icon">🪵</span>
+      <span class="menu-title">电子木鱼</span>
+    </div>
+    <div class="menu-right">
+      <button class="ctrl-btn btn-reset" id="resetBtn" title="重置计数">↺</button>
+      <button class="ctrl-btn btn-minimize" id="minimizeBtn" title="最小化">−</button>
+      <button class="ctrl-btn btn-close" id="closeBtn" title="关闭">×</button>
+    </div>
   </div>
 
-  <!-- 控制按钮 -->
-  <div class="controls">
-    <button class="ctrl-btn btn-reset" id="resetBtn" title="重置计数">↺</button>
-    <button class="ctrl-btn btn-close" id="closeBtn" title="关闭">×</button>
-  </div>
+  <!-- 内容区域 -->
+  <div class="content-area">
+    <!-- 指示器 -->
+    <div class="indicators">
+      <div class="indicator indicator-auto" id="autoIndicator">⚡ 自动</div>
+      <div class="indicator indicator-sound" id="soundIndicator">🪵 经典</div>
+    </div>
 
-  <div class="fish-container">
-    <!-- 木鱼 SVG - 真实造型 -->
+    <!-- 调整大小手柄 -->
+    <div class="resize-handle" id="resizeHandle"></div>
+
+    <!-- 木鱼 -->
     <svg class="fish-svg" id="fishSvg" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <!-- 木纹渐变 -->
         <linearGradient id="woodGrain" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" id="wood1" style="stop-color:#D4A574"/>
           <stop offset="30%" id="wood2" style="stop-color:#C4956A"/>
           <stop offset="60%" id="wood3" style="stop-color:#B8860B"/>
           <stop offset="100%" id="wood4" style="stop-color:#A0764A"/>
         </linearGradient>
-        <!-- 碗体渐变 -->
         <radialGradient id="bowlShine" cx="35%" cy="30%" r="65%">
           <stop offset="0%" id="bowlLight" style="stop-color:#E8C89E"/>
           <stop offset="50%" id="bowlMid" style="stop-color:#B8860B"/>
           <stop offset="100%" id="bowlDark" style="stop-color:#6B4423"/>
         </radialGradient>
-        <!-- 敲击面渐变 -->
         <radialGradient id="strikeShine" cx="40%" cy="35%" r="60%">
           <stop offset="0%" id="strikeLight" style="stop-color:#DEB887"/>
           <stop offset="100%" id="strikeDark" style="stop-color:#A0522D"/>
         </radialGradient>
-        <filter id="shadow">
-          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
-        </filter>
-        <filter id="innerShadow">
-          <feOffset dx="0" dy="2"/>
-          <feGaussianBlur stdDeviation="3"/>
-          <feComposite operator="out" in="SourceGraphic"/>
-          <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
-          <feBlend in="SourceGraphic"/>
-        </filter>
+        <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/></filter>
       </defs>
 
       <!-- 底座 -->
       <ellipse cx="100" cy="200" rx="55" ry="10" fill="#3E2723" opacity="0.6"/>
       <rect x="55" y="185" width="90" height="18" rx="3" fill="#5D4037"/>
       <rect x="60" y="188" width="80" height="12" rx="2" fill="#4E342E"/>
-      <!-- 底座装饰线 -->
       <line x1="65" y1="194" x2="135" y2="194" stroke="#6D4C41" stroke-width="1" opacity="0.5"/>
 
-      <!-- 木鱼主体 - 碗形 -->
+      <!-- 碗体 -->
       <ellipse cx="100" cy="130" rx="72" ry="65" fill="url(#bowlShine)" filter="url(#shadow)"/>
 
-      <!-- 碗体侧面纹理 -->
-      <path d="M 30 130 Q 50 155 70 145 Q 100 165 130 145 Q 150 155 170 130" 
-            stroke="url(#woodGrain)" stroke-width="3" fill="none" opacity="0.6"/>
-      <path d="M 35 145 Q 60 168 100 160 Q 140 168 165 145" 
-            stroke="url(#woodGrain)" stroke-width="2" fill="none" opacity="0.4"/>
-      <path d="M 42 158 Q 70 175 100 170 Q 130 175 158 158" 
-            stroke="url(#woodGrain)" stroke-width="1.5" fill="none" opacity="0.3"/>
+      <!-- 侧面纹理 -->
+      <path d="M 30 130 Q 50 155 70 145 Q 100 165 130 145 Q 150 155 170 130" stroke="url(#woodGrain)" stroke-width="3" fill="none" opacity="0.6"/>
+      <path d="M 35 145 Q 60 168 100 160 Q 140 168 165 145" stroke="url(#woodGrain)" stroke-width="2" fill="none" opacity="0.4"/>
+      <path d="M 42 158 Q 70 175 100 170 Q 130 175 158 158" stroke="url(#woodGrain)" stroke-width="1.5" fill="none" opacity="0.3"/>
 
-      <!-- 顶部弧面（敲击区域） -->
+      <!-- 顶部 -->
       <ellipse cx="100" cy="80" rx="68" ry="40" fill="url(#woodGrain)"/>
 
-      <!-- 敲击面 - 中央凹陷 -->
+      <!-- 敲击面 -->
       <ellipse cx="100" cy="80" rx="45" ry="25" fill="url(#strikeShine)" stroke="#8B4513" stroke-width="2"/>
-
-      <!-- 敲击面中心圆 -->
       <ellipse cx="100" cy="80" rx="28" ry="15" fill="#CD853F" opacity="0.8"/>
 
       <!-- 高光 -->
       <ellipse cx="80" cy="68" rx="18" ry="8" fill="rgba(255,255,255,0.2)"/>
       <ellipse cx="70" cy="110" rx="12" ry="20" fill="rgba(255,255,255,0.08)"/>
 
-      <!-- 鱼形雕刻装饰 -->
+      <!-- 鱼形雕刻 -->
       <g transform="translate(100, 80)" opacity="0.3">
-        <!-- 鱼身 -->
         <ellipse cx="0" cy="0" rx="20" ry="10" fill="none" stroke="#5D4037" stroke-width="1.5"/>
-        <!-- 鱼头 -->
         <circle cx="-18" cy="0" r="5" fill="none" stroke="#5D4037" stroke-width="1"/>
-        <!-- 鱼尾 -->
         <path d="M 18 0 Q 25 -8 22 -12 M 18 0 Q 25 8 22 12" stroke="#5D4037" stroke-width="1" fill="none"/>
-        <!-- 鱼眼 -->
         <circle cx="-16" cy="-2" r="1.5" fill="#5D4037"/>
-        <!-- 鱼鳞 -->
-        <path d="M -8 -5 Q -4 -8 0 -5 M 0 -5 Q 4 -8 8 -5 M -8 5 Q -4 8 0 5 M 0 5 Q 4 8 8 5" 
-              stroke="#5D4037" stroke-width="0.5" fill="none"/>
       </g>
 
-      <!-- 边缘装饰圈 -->
+      <!-- 装饰圈 -->
       <ellipse cx="100" cy="80" rx="50" ry="28" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
 
-      <!-- 敲击棒（小槌） -->
+      <!-- 敲击棒 -->
       <g transform="translate(155, 45) rotate(35)">
-        <!-- 棒身 -->
         <rect x="-3" y="0" width="6" height="45" rx="3" fill="#6D4C41"/>
-        <rect x="-2.5" y="5" width="5" height="35" rx="2.5" fill="#8D6E63"/>
-        <!-- 槌头 -->
         <ellipse cx="0" cy="-5" rx="9" ry="7" fill="#5D4037" stroke="#4E342E" stroke-width="1"/>
         <ellipse cx="0" cy="-5" rx="6" ry="4.5" fill="#6D4C41"/>
-        <ellipse cx="-2" cy="-7" rx="2" ry="1.5" fill="rgba(255,255,255,0.15)"/>
       </g>
     </svg>
 
@@ -303,7 +302,6 @@
       <div class="counter-label" id="counterLabel" style="color: #ffd700;">功德</div>
     </div>
 
-    <!-- 倒计时区域 -->
     <div class="countdown-area" id="countdownArea">
       <div class="countdown-display" id="countdownDisplay">00:00</div>
       <div class="countdown-label">双击设置倒计时</div>
@@ -311,610 +309,155 @@
   </div>
 
   <script>
-    // ========== 配置和状态 ==========
-    let count = 0;
-    let settings = {};
-    let audioCtx = null;
-    let customAudioBuffer = null;
-    let autoTimer = null;
-
+    // ========== 配置 ==========
+    let count = 0, settings = {}, audioCtx = null, customAudioBuffer = null, autoTimer = null;
     const counterEl = document.getElementById('counter');
     const counterLabelEl = document.getElementById('counterLabel');
     const fishSvg = document.getElementById('fishSvg');
-    const container = document.querySelector('.fish-container');
+    const contentArea = document.querySelector('.content-area');
     const autoIndicator = document.getElementById('autoIndicator');
     const soundIndicator = document.getElementById('soundIndicator');
     const countdownArea = document.getElementById('countdownArea');
 
-    // 皮肤颜色配置
     const skinColors = {
-      classic: {
-        wood: ['#D4A574', '#C4956A', '#B8860B', '#A0764A'],
-        bowl: ['#E8C89E', '#B8860B', '#6B4423'],
-        strike: ['#DEB887', '#A0522D', '#CD853F'],
-        base: ['#5D4037', '#4E342E'],
-        text: '#ffd700',
-        ripple: 'rgba(255, 215, 0, 0.6)'
-      },
-      jade: {
-        wood: ['#A8E6CF', '#88D8B0', '#50C878', '#3DAF6A'],
-        bowl: ['#C8F7DC', '#50C878', '#228B22'],
-        strike: ['#90EE90', '#2E8B57', '#66CDAA'],
-        base: ['#2E8B57', '#1E6B45'],
-        text: '#90EE90',
-        ripple: 'rgba(144, 238, 144, 0.6)'
-      },
-      gold: {
-        wood: ['#FFE135', '#FFD700', '#DAA520', '#CC9900'],
-        bowl: ['#FFF8DC', '#FFD700', '#B8860B'],
-        strike: ['#FFE4B5', '#DAA520', '#FFEC8B'],
-        base: ['#B8860B', '#8B6914'],
-        text: '#FFD700',
-        ripple: 'rgba(255, 215, 0, 0.6)'
-      },
-      silver: {
-        wood: ['#E8E8E8', '#D0D0D0', '#C0C0C0', '#A8A8A8'],
-        bowl: ['#F5F5F5', '#C0C0C0', '#808080'],
-        strike: ['#E0E0E0', '#909090', '#D3D3D3'],
-        base: ['#707070', '#505050'],
-        text: '#E0E0E0',
-        ripple: 'rgba(192, 192, 192, 0.6)'
-      },
-      rose: {
-        wood: ['#FFD5D5', '#FFB6C1', '#E8A090', '#C47A6C'],
-        bowl: ['#FFE4E1', '#E8A090', '#A0522D'],
-        strike: ['#FFC0CB', '#C47A6C', '#FFB6C1'],
-        base: ['#A0522D', '#8B4513'],
-        text: '#FFB6C1',
-        ripple: 'rgba(255, 182, 193, 0.6)'
-      },
-      dark: {
-        wood: ['#606060', '#505050', '#404040', '#303030'],
-        bowl: ['#707070', '#404040', '#1A1A1A'],
-        strike: ['#5A5A5A', '#2A2A2A', '#4A4A4A'],
-        base: ['#252525', '#151515'],
-        text: '#888888',
-        ripple: 'rgba(100, 100, 100, 0.6)'
-      }
+      classic: { wood: ['#D4A574','#C4956A','#B8860B','#A0764A'], bowl: ['#E8C89E','#B8860B','#6B4423'], strike: ['#DEB887','#A0522D','#CD853F'], text: '#ffd700', ripple: 'rgba(255,215,0,0.6)' },
+      jade: { wood: ['#A8E6CF','#88D8B0','#50C878','#3DAF6A'], bowl: ['#C8F7DC','#50C878','#228B22'], strike: ['#90EE90','#2E8B57','#66CDAA'], text: '#90EE90', ripple: 'rgba(144,238,144,0.6)' },
+      gold: { wood: ['#FFE135','#FFD700','#DAA520','#CC9900'], bowl: ['#FFF8DC','#FFD700','#B8860B'], strike: ['#FFE4B5','#DAA520','#FFEC8B'], text: '#FFD700', ripple: 'rgba(255,215,0,0.6)' },
+      silver: { wood: ['#E8E8E8','#D0D0D0','#C0C0C0','#A8A8A8'], bowl: ['#F5F5F5','#C0C0C0','#808080'], strike: ['#E0E0E0','#909090','#D3D3D3'], text: '#E0E0E0', ripple: 'rgba(192,192,192,0.6)' },
+      rose: { wood: ['#FFD5D5','#FFB6C1','#E8A090','#C47A6C'], bowl: ['#FFE4E1','#E8A090','#A0522D'], strike: ['#FFC0CB','#C47A6C','#FFB6C1'], text: '#FFB6C1', ripple: 'rgba(255,182,193,0.6)' },
+      dark: { wood: ['#606060','#505050','#404040','#303030'], bowl: ['#707070','#404040','#1A1A1A'], strike: ['#5A5A5A','#2A2A2A','#4A4A4A'], text: '#888888', ripple: 'rgba(100,100,100,0.6)' }
     };
-
-    // 音效名称映射
-    const soundNames = {
-      default: '🪵 经典',
-      bowl: '🔔 颂钵',
-      bell: '🎐 风铃',
-      drum: '🥁 小鼓',
-      click: '👆 清脆',
-      custom: '🎵 自定义'
-    };
+    const soundNames = { default:'🪵 经典', bowl:'🔔 颂钵', bell:'🎐 风铃', drum:'🥁 小鼓', click:'👆 清脆', custom:'🎵 自定义' };
 
     // ========== 初始化 ==========
     function init() {
-      loadSettings();
-      loadCount();
-      applySkin();
-      updateSoundIndicator();
-      setupAutoMode();
-      applyCountdownVisibility();
-
-      // 监听主窗口发来的设置更新（IPC方式）
+      loadSettings(); loadCount(); applySkin(); updateSoundIndicator(); setupAutoMode(); applyCountdownVisibility();
       if (window.utools) {
-        try {
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.on('settings-updated', (event, newSettings) => {
-            console.log('[IPC] 收到设置更新:', newSettings);
-            applyNewSettings(newSettings);
-          });
-        } catch (e) {
-          console.warn('IPC监听失败:', e);
-        }
+        try { const { ipcRenderer } = require('electron'); ipcRenderer.on('settings-updated', (e, s) => applyNewSettings(s)); } catch(e) {}
       }
-
-      // 监听CustomEvent方式（备用）
-      window.addEventListener('settings-updated', (e) => {
-        console.log('[Event] 收到设置更新:', e.detail);
-        applyNewSettings(e.detail);
-      });
-
-      // 定期检查设置变化（防止IPC丢失）
+      window.addEventListener('settings-updated', (e) => applyNewSettings(e.detail));
       setInterval(reloadSettings, 2000);
     }
-
     function loadSettings() {
-      if (window.utools) {
-        const saved = utools.dbStorage.getItem('muyu_settings');
-        settings = saved ? { ...getDefaultSettings(), ...saved } : getDefaultSettings();
-      } else {
-        settings = getDefaultSettings();
-      }
-      console.log('加载设置:', settings);
+      if (window.utools) { const s = utools.dbStorage.getItem('muyu_settings'); settings = s ? {...getDefaultSettings(),...s} : getDefaultSettings(); }
+      else settings = getDefaultSettings();
     }
-
-    function getDefaultSettings() {
-      return {
-        volume: 0.7,
-        skin: 'classic',
-        sound: 'default',
-        autoInterval: 0,
-        reminderInterval: 0,
-        customSoundPath: null,
-        hotkey: 'Space',
-        opacity: 100,
-        showCountdown: true
-      };
-    }
-
-    function applyNewSettings(newSettings) {
-      if (!newSettings) return;
-      settings = { ...settings, ...newSettings };
-      console.log('应用新设置:', settings);
-      applySkin();
-      updateSoundIndicator();
-      setupAutoMode();
-      applyOpacity();
-      applyCountdownVisibility();
-      customAudioBuffer = null;
-    }
-
-    function applyCountdownVisibility() {
-      if (settings.showCountdown === false) {
-        countdownArea.classList.add('hidden');
-      } else {
-        countdownArea.classList.remove('hidden');
-      }
-    }
-
-    function applyOpacity() {
-      const opacity = (settings.opacity ?? 100) / 100;
-      document.body.style.opacity = opacity;
-    }
-
+    function getDefaultSettings() { return { volume:0.7, skin:'classic', sound:'default', autoInterval:0, reminderInterval:0, customSoundPath:null, hotkey:'Space', opacity:100, showCountdown:true }; }
+    function applyNewSettings(s) { if(!s)return; settings={...settings,...s}; applySkin(); updateSoundIndicator(); setupAutoMode(); applyOpacity(); applyCountdownVisibility(); customAudioBuffer=null; }
+    function applyCountdownVisibility() { countdownArea.classList.toggle('hidden', settings.showCountdown===false); }
+    function applyOpacity() { document.body.style.opacity=(settings.opacity??100)/100; }
     function reloadSettings() {
-      if (window.utools) {
-        const saved = utools.dbStorage.getItem('muyu_settings');
-        if (saved) {
-          const newSettings = { ...getDefaultSettings(), ...saved };
-          if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
-            console.log('检测到设置变化，重新加载');
-            settings = newSettings;
-            applySkin();
-            updateSoundIndicator();
-            setupAutoMode();
-            applyOpacity();
-            applyCountdownVisibility();
-          }
-        }
-      }
+      if(window.utools){const s=utools.dbStorage.getItem('muyu_settings');if(s){const n={...getDefaultSettings(),...s};if(JSON.stringify(n)!==JSON.stringify(settings)){settings=n;applySkin();updateSoundIndicator();setupAutoMode();applyOpacity();applyCountdownVisibility();}}}
     }
-
     function loadCount() {
-      if (window.utools) {
-        const today = new Date().toISOString().split('T')[0];
-        const stats = utools.dbStorage.getItem('muyu_stats_' + today) || { count: 0 };
-        count = stats.count;
-      } else {
-        count = parseInt(localStorage.getItem('muyu_count') || '0');
-      }
-      updateDisplay();
+      if(window.utools){const t=new Date().toISOString().split('T')[0];count=(utools.dbStorage.getItem('muyu_stats_'+t)||{count:0}).count;}else count=parseInt(localStorage.getItem('muyu_count')||'0');
+      counterEl.textContent=count;
     }
-
     function saveCount() {
-      if (window.utools) {
-        const today = new Date().toISOString().split('T')[0];
-        let stats = utools.dbStorage.getItem('muyu_stats_' + today) || { count: 0, records: [] };
-        stats.count = count;
-        stats.records.push(Date.now());
-        utools.dbStorage.setItem('muyu_stats_' + today, stats);
-      } else {
-        localStorage.setItem('muyu_count', count.toString());
-      }
-    }
-
-    function updateDisplay() {
-      counterEl.textContent = count;
+      if(window.utools){const t=new Date().toISOString().split('T')[0];let s=utools.dbStorage.getItem('muyu_stats_'+t)||{count:0,records:[]};s.count=count;s.records.push(Date.now());utools.dbStorage.setItem('muyu_stats_'+t,s);}
+      else localStorage.setItem('muyu_count',count.toString());
     }
 
     // ========== 皮肤 ==========
     function applySkin() {
-      const skin = skinColors[settings.skin] || skinColors.classic;
-
-      // 木纹渐变
-      document.getElementById('wood1').style.stopColor = skin.wood[0];
-      document.getElementById('wood2').style.stopColor = skin.wood[1];
-      document.getElementById('wood3').style.stopColor = skin.wood[2];
-      document.getElementById('wood4').style.stopColor = skin.wood[3];
-
-      // 碗体渐变
-      document.getElementById('bowlLight').style.stopColor = skin.bowl[0];
-      document.getElementById('bowlMid').style.stopColor = skin.bowl[1];
-      document.getElementById('bowlDark').style.stopColor = skin.bowl[2];
-
-      // 敲击面渐变
-      document.getElementById('strikeLight').style.stopColor = skin.strike[0];
-      document.getElementById('strikeDark').style.stopColor = skin.strike[1];
-
-      counterEl.style.color = skin.text;
-      counterLabelEl.style.color = skin.text;
+      const s=skinColors[settings.skin]||skinColors.classic;
+      document.getElementById('wood1').style.stopColor=s.wood[0];
+      document.getElementById('wood2').style.stopColor=s.wood[1];
+      document.getElementById('wood3').style.stopColor=s.wood[2];
+      document.getElementById('wood4').style.stopColor=s.wood[3];
+      document.getElementById('bowlLight').style.stopColor=s.bowl[0];
+      document.getElementById('bowlMid').style.stopColor=s.bowl[1];
+      document.getElementById('bowlDark').style.stopColor=s.bowl[2];
+      document.getElementById('strikeLight').style.stopColor=s.strike[0];
+      document.getElementById('strikeDark').style.stopColor=s.strike[1];
+      counterEl.style.color=s.text; counterLabelEl.style.color=s.text;
     }
+    function updateSoundIndicator() { soundIndicator.textContent=soundNames[settings.sound]||'🪵 经典'; }
 
-    function updateSoundIndicator() {
-      const name = soundNames[settings.sound] || '🪵 经典';
-      soundIndicator.textContent = name;
-    }
-
-    // ========== 音效系统 ==========
-    function getAudioCtx() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return audioCtx;
-    }
-
+    // ========== 音效 ==========
+    function getAudioCtx() { if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
     function playMuyuSound() {
-      const ctx = getAudioCtx();
-      const vol = settings.volume;
-      if (settings.sound === 'custom' && settings.customSoundPath) {
-        playCustomSound(ctx, vol);
-        return;
-      }
-      switch (settings.sound) {
-        case 'bowl': playBowlSound(ctx, vol); break;
-        case 'bell': playBellSound(ctx, vol); break;
-        case 'drum': playDrumSound(ctx, vol); break;
-        case 'click': playClickSound(ctx, vol); break;
-        default: playDefaultSound(ctx, vol);
-      }
+      const c=getAudioCtx(),v=settings.volume;
+      if(settings.sound==='custom'&&settings.customSoundPath){playCustomSound(c,v);return;}
+      switch(settings.sound){case'bowl':playBowlSound(c,v);break;case'bell':playBellSound(c,v);break;case'drum':playDrumSound(c,v);break;case'click':playClickSound(c,v);break;default:playDefaultSound(c,v);}
     }
+    function playDefaultSound(c,v){const n=c.currentTime;const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.setValueAtTime(800,n);o1.frequency.exponentialRampToValueAtTime(200,n+.08);g1.gain.setValueAtTime(.4*v,n);g1.gain.exponentialRampToValueAtTime(.001,n+.15);o1.connect(g1);g1.connect(c.destination);o1.start(n);o1.stop(n+.15);const o2=c.createOscillator(),g2=c.createGain();o2.type='triangle';o2.frequency.setValueAtTime(400,n);o2.frequency.exponentialRampToValueAtTime(150,n+.2);g2.gain.setValueAtTime(.2*v,n);g2.gain.exponentialRampToValueAtTime(.001,n+.25);o2.connect(g2);g2.connect(c.destination);o2.start(n);o2.stop(n+.25);}
+    function playBowlSound(c,v){const n=c.currentTime;[261.63,392,523.25,659.26].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.15*v,n);g.gain.exponentialRampToValueAtTime(.001,n+2);o.connect(g);g.connect(c.destination);o.start(n+i*.02);o.stop(n+2);});}
+    function playBellSound(c,v){const n=c.currentTime;[1047,1319,1568].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.2*v,n+i*.05);g.gain.exponentialRampToValueAtTime(.001,n+.8+i*.1);o.connect(g);g.connect(c.destination);o.start(n+i*.05);o.stop(n+1);});}
+    function playDrumSound(c,v){const n=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(150,n);o.frequency.exponentialRampToValueAtTime(50,n+.1);g.gain.setValueAtTime(.5*v,n);g.gain.exponentialRampToValueAtTime(.001,n+.15);o.connect(g);g.connect(c.destination);o.start(n);o.stop(n+.15);}
+    function playClickSound(c,v){const n=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.setValueAtTime(2000,n);o.frequency.exponentialRampToValueAtTime(500,n+.03);g.gain.setValueAtTime(.3*v,n);g.gain.exponentialRampToValueAtTime(.001,n+.05);o.connect(g);g.connect(c.destination);o.start(n);o.stop(n+.05);}
+    function playCustomSound(c,v){if(customAudioBuffer){const s=c.createBufferSource();s.buffer=customAudioBuffer;const g=c.createGain();g.gain.value=v;s.connect(g);g.connect(c.destination);s.start();}else fetch(settings.customSoundPath).then(r=>r.arrayBuffer()).then(b=>c.decodeAudioData(b)).then(d=>{customAudioBuffer=d;playCustomSound(c,v);}).catch(()=>playDefaultSound(c,v));}
 
-    function playDefaultSound(ctx, vol) {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, now);
-      osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
-      gain.gain.setValueAtTime(0.4 * vol, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(now); osc.stop(now + 0.15);
-
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(400, now);
-      osc2.frequency.exponentialRampToValueAtTime(150, now + 0.2);
-      gain2.gain.setValueAtTime(0.2 * vol, now);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc2.connect(gain2); gain2.connect(ctx.destination);
-      osc2.start(now); osc2.stop(now + 0.25);
-
-      const osc3 = ctx.createOscillator();
-      const gain3 = ctx.createGain();
-      osc3.type = 'sine';
-      osc3.frequency.setValueAtTime(1200, now + 0.01);
-      osc3.frequency.exponentialRampToValueAtTime(600, now + 0.3);
-      gain3.gain.setValueAtTime(0.08 * vol, now + 0.01);
-      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc3.connect(gain3); gain3.connect(ctx.destination);
-      osc3.start(now + 0.01); osc3.stop(now + 0.35);
+    // ========== 倒计时 ==========
+    let countdownInterval=null,countdownRemaining=0,countdownTotal=0,isEditingCountdown=false,isCountdownFinished=false;
+    const countdownDisplay=document.getElementById('countdownDisplay');
+    const countdownLabel=countdownArea.querySelector('.countdown-label');
+    function formatTime(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
+    function updateCountdownDisplay(){countdownDisplay.textContent=formatTime(countdownRemaining);}
+    function enterEditMode(){
+      if(isCountdownFinished)stopCountdownAlarm();if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;}
+      isEditingCountdown=true;countdownArea.classList.add('editing');countdownArea.classList.remove('running','finished');
+      const inp=document.createElement('input');inp.type='text';inp.className='countdown-input';inp.placeholder='分:秒 或 分钟';inp.value=countdownRemaining>0?formatTime(countdownRemaining):'';
+      countdownDisplay.style.display='none';countdownLabel.textContent='输入后按回车或点击别处';countdownArea.appendChild(inp);inp.focus();inp.select();
+      inp.addEventListener('blur',()=>parseAndStartCountdown(inp.value));
+      inp.addEventListener('keydown',(e)=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value='';inp.blur();}});
     }
-
-    function playBowlSound(ctx, vol) {
-      const now = ctx.currentTime;
-      [261.63, 392, 523.25, 659.26].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.15 * vol, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(now + i * 0.02); osc.stop(now + 2);
-      });
+    function parseAndStartCountdown(v){
+      if(!isEditingCountdown)return;isEditingCountdown=false;countdownArea.classList.remove('editing');
+      const inp=countdownArea.querySelector('.countdown-input');if(inp)inp.remove();countdownDisplay.style.display='';
+      const t=v.trim();if(!t){countdownRemaining=0;updateCountdownDisplay();countdownLabel.textContent='双击设置倒计时';return;}
+      let s=0;if(t.includes(':')){const p=t.split(':');s=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}else if(t.includes('.'))s=Math.round(parseFloat(t)*60);else if(parseInt(t)>60)s=parseInt(t);else s=parseInt(t)*60;
+      if(s<=0){countdownRemaining=0;updateCountdownDisplay();countdownLabel.textContent='双击设置倒计时';return;}startCountdown(s);
     }
-
-    function playBellSound(ctx, vol) {
-      const now = ctx.currentTime;
-      [1047, 1319, 1568].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.2 * vol, now + i * 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8 + i * 0.1);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(now + i * 0.05); osc.stop(now + 1);
-      });
+    function startCountdown(sec){
+      if(countdownInterval)clearInterval(countdownInterval);countdownRemaining=sec;countdownTotal=sec;isCountdownFinished=false;
+      countdownArea.classList.add('running');countdownArea.classList.remove('finished');countdownLabel.textContent='点击暂停';updateCountdownDisplay();
+      countdownInterval=setInterval(()=>{countdownRemaining--;updateCountdownDisplay();if(countdownRemaining<=0){clearInterval(countdownInterval);countdownInterval=null;onCountdownFinished();}},1000);
     }
-
-    function playDrumSound(ctx, vol) {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-      gain.gain.setValueAtTime(0.5 * vol, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(now); osc.stop(now + 0.15);
-
-      const bufferSize = ctx.sampleRate * 0.1;
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.3 * vol, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      noise.connect(noiseGain); noiseGain.connect(ctx.destination);
-      noise.start(now); noise.stop(now + 0.1);
+    function pauseCountdown(){if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;countdownArea.classList.remove('running');countdownLabel.textContent='点击继续';}}
+    function resumeCountdown(){
+      if(countdownRemaining>0&&!countdownInterval){countdownArea.classList.add('running');countdownLabel.textContent='点击暂停';
+      countdownInterval=setInterval(()=>{countdownRemaining--;updateCountdownDisplay();if(countdownRemaining<=0){clearInterval(countdownInterval);countdownInterval=null;onCountdownFinished();}},1000);}
     }
-
-    function playClickSound(ctx, vol) {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(2000, now);
-      osc.frequency.exponentialRampToValueAtTime(500, now + 0.03);
-      gain.gain.setValueAtTime(0.3 * vol, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(now); osc.stop(now + 0.05);
+    function onCountdownFinished(){
+      isCountdownFinished=true;countdownArea.classList.remove('running');countdownArea.classList.add('finished');countdownLabel.textContent='点击停止';playAlarmSound();
+      if(window.utools){utools.showNotification('⏰ 倒计时结束！');utools.sendToParent('countdown-finished',{total:countdownTotal});}
     }
-
-    function playCustomSound(ctx, vol) {
-      if (customAudioBuffer) {
-        const source = ctx.createBufferSource();
-        source.buffer = customAudioBuffer;
-        const gain = ctx.createGain();
-        gain.gain.value = vol;
-        source.connect(gain); gain.connect(ctx.destination);
-        source.start();
-      } else {
-        fetch(settings.customSoundPath)
-          .then(r => r.arrayBuffer())
-          .then(buf => ctx.decodeAudioData(buf))
-          .then(decoded => { customAudioBuffer = decoded; playCustomSound(ctx, vol); })
-          .catch(() => playDefaultSound(ctx, vol));
-      }
-    }
-
-    // ========== 倒计时系统 ==========
-    let countdownInterval = null;
-    let countdownRemaining = 0;
-    let countdownTotal = 0;
-    let isEditingCountdown = false;
-    let isCountdownFinished = false;
-    const countdownDisplay = document.getElementById('countdownDisplay');
-    const countdownLabel = countdownArea.querySelector('.countdown-label');
-
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = seconds % 60;
-      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    function updateCountdownDisplay() {
-      countdownDisplay.textContent = formatTime(countdownRemaining);
-    }
-
-    function enterEditMode() {
-      if (isCountdownFinished) stopCountdownAlarm();
-      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-
-      isEditingCountdown = true;
-      countdownArea.classList.add('editing');
-      countdownArea.classList.remove('running', 'finished');
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'countdown-input';
-      input.placeholder = '分:秒 或 分钟';
-      input.value = countdownRemaining > 0 ? formatTime(countdownRemaining) : '';
-
-      countdownDisplay.style.display = 'none';
-      countdownLabel.textContent = '输入后按回车或点击别处';
-      countdownArea.appendChild(input);
-      input.focus();
-      input.select();
-
-      input.addEventListener('blur', () => { parseAndStartCountdown(input.value); });
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') input.blur();
-        if (e.key === 'Escape') { input.value = ''; input.blur(); }
-      });
-    }
-
-    function parseAndStartCountdown(inputValue) {
-      if (!isEditingCountdown) return;
-      isEditingCountdown = false;
-      countdownArea.classList.remove('editing');
-      const input = countdownArea.querySelector('.countdown-input');
-      if (input) input.remove();
-      countdownDisplay.style.display = '';
-
-      const trimmed = inputValue.trim();
-      if (!trimmed) { countdownRemaining = 0; updateCountdownDisplay(); countdownLabel.textContent = '双击设置倒计时'; return; }
-
-      let totalSeconds = 0;
-      if (trimmed.includes(':')) {
-        const parts = trimmed.split(':');
-        totalSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-      } else if (trimmed.includes('.')) {
-        totalSeconds = Math.round(parseFloat(trimmed) * 60);
-      } else if (parseInt(trimmed) > 60) {
-        totalSeconds = parseInt(trimmed);
-      } else {
-        totalSeconds = parseInt(trimmed) * 60;
-      }
-
-      if (totalSeconds <= 0) { countdownRemaining = 0; updateCountdownDisplay(); countdownLabel.textContent = '双击设置倒计时'; return; }
-      startCountdown(totalSeconds);
-    }
-
-    function startCountdown(seconds) {
-      if (countdownInterval) clearInterval(countdownInterval);
-      countdownRemaining = seconds;
-      countdownTotal = seconds;
-      isCountdownFinished = false;
-      countdownArea.classList.add('running');
-      countdownArea.classList.remove('finished');
-      countdownLabel.textContent = '点击暂停';
-      updateCountdownDisplay();
-
-      countdownInterval = setInterval(() => {
-        countdownRemaining--;
-        updateCountdownDisplay();
-        if (countdownRemaining <= 0) { clearInterval(countdownInterval); countdownInterval = null; onCountdownFinished(); }
-      }, 1000);
-    }
-
-    function pauseCountdown() {
-      if (countdownInterval) {
-        clearInterval(countdownInterval); countdownInterval = null;
-        countdownArea.classList.remove('running');
-        countdownLabel.textContent = '点击继续';
-      }
-    }
-
-    function resumeCountdown() {
-      if (countdownRemaining > 0 && !countdownInterval) {
-        countdownArea.classList.add('running');
-        countdownLabel.textContent = '点击暂停';
-        countdownInterval = setInterval(() => {
-          countdownRemaining--;
-          updateCountdownDisplay();
-          if (countdownRemaining <= 0) { clearInterval(countdownInterval); countdownInterval = null; onCountdownFinished(); }
-        }, 1000);
-      }
-    }
-
-    function onCountdownFinished() {
-      isCountdownFinished = true;
-      countdownArea.classList.remove('running');
-      countdownArea.classList.add('finished');
-      countdownLabel.textContent = '点击停止';
-      playAlarmSound();
-      if (window.utools) {
-        utools.showNotification('⏰ 倒计时结束！该休息一下或继续敲木鱼啦！');
-        utools.sendToParent('countdown-finished', { total: countdownTotal });
-      }
-    }
-
-    function stopCountdownAlarm() {
-      isCountdownFinished = false;
-      countdownArea.classList.remove('finished');
-      countdownRemaining = 0;
-      updateCountdownDisplay();
-      countdownLabel.textContent = '双击设置倒计时';
-    }
-
-    function playAlarmSound() {
-      const ctx = getAudioCtx();
-      const now = ctx.currentTime;
-      const vol = settings.volume || 0.7;
-      for (let i = 0; i < 6; i++) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.value = i % 2 === 0 ? 880 : 660;
-        gain.gain.setValueAtTime(0.3 * vol, now + i * 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.2 + 0.15);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(now + i * 0.2); osc.stop(now + i * 0.2 + 0.15);
-      }
-    }
-
-    countdownArea.addEventListener('click', (e) => {
-      if (isEditingCountdown || e.target.classList.contains('countdown-input')) return;
-      if (isCountdownFinished) stopCountdownAlarm();
-      else if (countdownInterval) pauseCountdown();
-      else if (countdownRemaining > 0) resumeCountdown();
-    });
-
-    countdownArea.addEventListener('dblclick', (e) => {
-      if (isEditingCountdown) return;
-      e.preventDefault();
-      enterEditMode();
-    });
+    function stopCountdownAlarm(){isCountdownFinished=false;countdownArea.classList.remove('finished');countdownRemaining=0;updateCountdownDisplay();countdownLabel.textContent='双击设置倒计时';}
+    function playAlarmSound(){const c=getAudioCtx(),n=c.currentTime,v=settings.volume||.7;for(let i=0;i<6;i++){const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=i%2===0?880:660;g.gain.setValueAtTime(.3*v,n+i*.2);g.gain.exponentialRampToValueAtTime(.001,n+i*.2+.15);o.connect(g);g.connect(c.destination);o.start(n+i*.2);o.stop(n+i*.2+.15);}}
+    countdownArea.addEventListener('click',(e)=>{if(isEditingCountdown||e.target.classList.contains('countdown-input'))return;if(isCountdownFinished)stopCountdownAlarm();else if(countdownInterval)pauseCountdown();else if(countdownRemaining>0)resumeCountdown();});
+    countdownArea.addEventListener('dblclick',(e)=>{if(!isEditingCountdown){e.preventDefault();enterEditMode();}});
 
     // ========== 视觉效果 ==========
-    function showMeritText() {
-      const skin = skinColors[settings.skin] || skinColors.classic;
-      const text = document.createElement('div');
-      text.className = 'merit-text';
-      text.textContent = '功德+1';
-      text.style.color = skin.text;
-      const offsetX = (Math.random() - 0.5) * 80;
-      text.style.left = `calc(50% + ${offsetX}px - 25px)`;
-      text.style.top = '25px';
-      container.appendChild(text);
-      setTimeout(() => text.remove(), 1200);
-    }
-
-    function showRipple() {
-      const skin = skinColors[settings.skin] || skinColors.classic;
-      const ripple = document.createElement('div');
-      ripple.className = 'ripple';
-      ripple.style.borderColor = skin.ripple;
-      ripple.style.left = 'calc(50% - 50px)';
-      ripple.style.top = '30px';
-      container.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 700);
-    }
+    function showMeritText(){const s=skinColors[settings.skin]||skinColors.classic;const t=document.createElement('div');t.className='merit-text';t.textContent='功德+1';t.style.color=s.text;t.style.left=`calc(50% + ${(Math.random()-.5)*80}px - 25px)`;t.style.top='30px';contentArea.appendChild(t);setTimeout(()=>t.remove(),1200);}
+    function showRipple(){const s=skinColors[settings.skin]||skinColors.classic;const r=document.createElement('div');r.className='ripple';r.style.borderColor=s.ripple;r.style.left='calc(50% - 50px)';r.style.top='25px';contentArea.appendChild(r);setTimeout(()=>r.remove(),700);}
 
     // ========== 自动模式 ==========
-    function setupAutoMode() {
-      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-      if (settings.autoInterval > 0) {
-        autoIndicator.classList.add('active');
-        autoTimer = setInterval(knock, settings.autoInterval * 1000);
-      } else {
-        autoIndicator.classList.remove('active');
-      }
-    }
+    function setupAutoMode(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;}if(settings.autoInterval>0){autoIndicator.classList.add('active');autoTimer=setInterval(knock,settings.autoInterval*1000);}else autoIndicator.classList.remove('active');}
 
     // ========== 敲击 ==========
-    function knock() {
-      count++;
-      saveCount();
-      updateDisplay();
-      fishSvg.classList.remove('knock');
-      void fishSvg.offsetWidth;
-      fishSvg.classList.add('knock');
-      playMuyuSound();
-      showMeritText();
-      showRipple();
-      if (window.utools) utools.sendToParent('muyu-knock', { count });
-    }
+    function knock(){count++;saveCount();counterEl.textContent=count;fishSvg.classList.remove('knock');void fishSvg.offsetWidth;fishSvg.classList.add('knock');playMuyuSound();showMeritText();showRipple();if(window.utools)utools.sendToParent('muyu-knock',{count});}
+    fishSvg.addEventListener('click',knock);
+    document.addEventListener('keydown',(e)=>{if(e.code===settings.hotkey){e.preventDefault();knock();}});
+    document.getElementById('resetBtn').addEventListener('click',(e)=>{e.stopPropagation();count=0;saveCount();counterEl.textContent=count;});
+    document.getElementById('closeBtn').addEventListener('click',(e)=>{e.stopPropagation();window.close();});
+    document.getElementById('minimizeBtn').addEventListener('click',(e)=>{e.stopPropagation();if(window.utools)utools.sendToParent('minimize-window');});
 
-    // ========== 事件 ==========
-    fishSvg.addEventListener('click', knock);
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === settings.hotkey) {
-        e.preventDefault();
-        knock();
-      }
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      count = 0;
-      saveCount();
-      updateDisplay();
-    });
-
-    document.getElementById('closeBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      window.close();
-    });
+    // ========== 窗口调整大小 ==========
+    const resizeHandle=document.getElementById('resizeHandle');
+    let isResizing=false,startWidth=0,startHeight=0,startX=0,startY=0;
+    const BASE_WIDTH=220,BASE_HEIGHT=340;
+    let currentZoom=1;
+    function loadZoom(){if(window.utools){const s=utools.dbStorage.getItem('muyu_window_zoom');if(s)currentZoom=Math.max(.5,Math.min(2,parseFloat(s)));applyZoom();}}
+    function saveZoom(){if(window.utools)utools.dbStorage.setItem('muyu_window_zoom',currentZoom.toString());}
+    function applyZoom(){document.body.style.zoom=currentZoom;}
+    resizeHandle.addEventListener('mousedown',(e)=>{e.preventDefault();isResizing=true;startX=e.screenX;startY=e.screenY;startWidth=window.innerWidth;startHeight=window.innerHeight;document.body.style.cursor='nwse-resize';document.body.style.userSelect='none';});
+    document.addEventListener('mousemove',(e)=>{if(!isResizing)return;const w=Math.max(110,startWidth+e.screenX-startX),h=Math.max(170,startHeight+e.screenY-startY);currentZoom=Math.max(.5,Math.min(2,Math.min(w/BASE_WIDTH,h/BASE_HEIGHT)));applyZoom();if(window.utools)utools.sendToParent('resize-window',{width:w,height:h});});
+    document.addEventListener('mouseup',()=>{if(isResizing){isResizing=false;document.body.style.cursor='';document.body.style.userSelect='';saveZoom();}});
+    resizeHandle.addEventListener('dblclick',(e)=>{e.preventDefault();currentZoom=1;applyZoom();saveZoom();if(window.utools)utools.sendToParent('resize-window',{width:BASE_WIDTH,height:BASE_HEIGHT});});
 
     // ========== 启动 ==========
-    init();
+    init(); loadZoom();
   </script>
 </body>
 </html>

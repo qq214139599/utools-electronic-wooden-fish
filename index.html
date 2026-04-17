@@ -570,12 +570,14 @@
           show: false,
           title: '电子木鱼',
           width: 220,
-          height: 300,
+          height: 320,
+          minWidth: 110,
+          minHeight: 160,
           frame: false,
           transparent: true,
           alwaysOnTop: true,
           skipTaskbar: true,
-          resizable: false,
+          resizable: true,
           movable: true,
           minimizable: false,
           maximizable: false,
@@ -643,6 +645,42 @@
       const mins = Math.floor(total / 60);
       const secs = total % 60;
       console.log(`倒计时结束：${mins}分${secs}秒`);
+    });
+
+    // 监听窗口调整大小
+    window.addEventListener('resize-window-event', (e) => {
+      const { width, height } = e.detail;
+      if (isWindowValid(fishWindow)) {
+        try {
+          fishWindow.setSize(width, height);
+        } catch (err) {
+          console.warn('调整窗口大小失败:', err);
+        }
+      }
+    });
+
+    // 监听最小化窗口
+    window.addEventListener('minimize-window-event', () => {
+      if (isWindowValid(fishWindow)) {
+        try {
+          fishWindow.minimize();
+        } catch (err) {
+          console.warn('最小化窗口失败:', err);
+        }
+      }
+    });
+
+    // 监听窗口移动
+    window.addEventListener('move-window-event', (e) => {
+      const { deltaX, deltaY } = e.detail;
+      if (isWindowValid(fishWindow)) {
+        try {
+          const pos = fishWindow.getPosition();
+          fishWindow.setPosition(pos[0] + deltaX, pos[1] + deltaY);
+        } catch (err) {
+          console.warn('移动窗口失败:', err);
+        }
+      }
     });
 
     // ========== 自动敲击 ==========

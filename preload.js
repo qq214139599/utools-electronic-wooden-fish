@@ -96,3 +96,16 @@ ipcRenderer.on("countdown-finished", (event, data) => {
   console.log("倒计时结束:", data);
   window.dispatchEvent(new CustomEvent('countdown-finished-event', { detail: data }));
 });
+
+ipcRenderer.on("resize-window", (event, data) => {
+  console.log("调整窗口大小:", data);
+  window.dispatchEvent(new CustomEvent('resize-window-event', { detail: data }));
+});
+
+ipcRenderer.on("move-window", (event, data) => {
+  window.dispatchEvent(new CustomEvent('move-window-event', { detail: data }));
+});
+
+ipcRenderer.on("get-window-position", (event) => {
+  window.dispatchEvent(new CustomEvent('get-window-position-event'));
+});
