@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电子木鱼</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #eee;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 导航栏 */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+    }
+    .nav-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .nav-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+
+    /* 页面容器 */
+    .page { display: none; padding: 20px; }
+    .page.active { display: block; }
+
+    /* 主页 */
+    .main-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 350px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #ffd700, #ff8c00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 30px;
+    }
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin: 5px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      box-shadow: none;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+    .quick-stats {
+      margin-top: 25px;
+      display: flex;
+      gap: 30px;
+      text-align: center;
+    }
+    .stat-item .num {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffd700;
+    }
+    .stat-item .label {
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* 统计页 */
+    .stats-page { max-width: 500px; margin: 0 auto; }
+    .stats-title {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffd700;
+    }
+    .stat-card .label {
+      font-size: 13px;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    /* 日历热力图 */
+    .calendar-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .calendar-title {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #aaa;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .calendar-day {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #666;
+    }
+    .calendar-day.level-0 { background: rgba(255,255,255,0.05); }
+    .calendar-day.level-1 { background: rgba(255,215,0,0.2); }
+    .calendar-day.level-2 { background: rgba(255,215,0,0.4); }
+    .calendar-day.level-3 { background: rgba(255,215,0,0.6); }
+    .calendar-day.level-4 { background: rgba(255,215,0,0.8); color: #1a1a2e; }
+
+    /* 设置页 */
+    .settings-page { max-width: 500px; margin: 0 auto; }
+    .settings-title {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+    .setting-group {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+    .setting-group h3 {
+      font-size: 16px;
+      color: #ffd700;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label {
+      font-size: 14px;
+      color: #ccc;
+    }
+    .setting-desc {
+      font-size: 12px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    /* 控件样式 */
+    input[type="range"] {
+      width: 120px;
+      accent-color: #ffd700;
+    }
+    select, input[type="number"] {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    select option { background: #1a1a2e; }
+
+    .toggle {
+      width: 50px;
+      height: 26px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .toggle.active { background: #667eea; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+    .toggle.active::after { transform: translateX(24px); }
+
+    /* 皮肤预览 */
+    .skin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .skin-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .skin-item:hover { background: rgba(255,255,255,0.1); }
+    .skin-item.selected { border-color: #ffd700; }
+    .skin-preview {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 8px;
+    }
+    .skin-name {
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    /* 音效选择 */
+    .sound-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sound-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    .sound-btn:hover { background: rgba(255,255,255,0.1); }
+    .sound-btn.selected { background: #667eea; border-color: #667eea; color: #fff; }
+
+    .file-upload {
+      margin-top: 10px;
+    }
+    .file-upload input[type="file"] {
+      display: none;
+    }
+    .file-upload label {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px dashed rgba(255,255,255,0.3);
+      color: #888;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    .file-upload label:hover { border-color: #ffd700; color: #ffd700; }
+
+    /* 提醒设置 */
+    .reminder-options {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .reminder-input {
+      width: 80px;
+    }
+
+    /* 信息提示 */
+    .info {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航 -->
+  <div class="nav">
+    <button class="nav-btn active" data-page="main">🪵 木鱼</button>
+    <button class="nav-btn" data-page="stats">📊 统计</button>
+    <button class="nav-btn" data-page="settings">⚙️ 设置</button>
+  </div>
+
+  <!-- 主页 -->
+  <div class="page active" id="page-main">
+    <div class="main-page">
+      <div class="title">🪵 电子木鱼</div>
+      <div class="subtitle">点击按钮，在桌面上召唤一个悬浮木鱼</div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" id="openBtn">🙏 开启木鱼</button>
+        <button class="btn btn-secondary" id="closeBtn" style="display:none;">关闭木鱼</button>
+      </div>
+
+      <div class="quick-stats">
+        <div class="stat-item">
+          <div class="num" id="todayCount">0</div>
+          <div class="label">今日功德</div>
+        </div>
+        <div class="stat-item">
+          <div class="num" id="totalCount">0</div>
+          <div class="label">总功德</div>
+        </div>
+      </div>
+
+      <div class="info">按空格键或点击木鱼即可敲击</div>
+    </div>
+  </div>
+
+  <!-- 统计页 -->
+  <div class="page" id="page-stats">
+    <div class="stats-page">
+      <div class="stats-title">📊 功德统计</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="value" id="stat-today">0</div>
+          <div class="label">今日</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="stat-weekly">0</div>
+          <div class="label">本周</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="stat-monthly">0</div>
+          <div class="label">本月</div>
+        </div>
+      </div>
+
+      <div class="calendar-section">
+        <div class="calendar-title">📅 近 30 天功德热力图</div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置页 -->
+  <div class="page" id="page-settings">
+    <div class="settings-page">
+      <div class="settings-title">⚙️ 木鱼设置</div>
+
+      <!-- 音效设置 -->
+      <div class="setting-group">
+        <h3>🔊 音效设置</h3>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">音量</div>
+            <div class="setting-desc">调整敲击音效音量</div>
+          </div>
+          <input type="range" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">音效类型</div>
+            <div class="setting-desc">选择敲击音效风格</div>
+          </div>
+        </div>
+        <div style="padding: 10px 0;">
+          <div class="sound-options" id="soundOptions">
+            <button class="sound-btn selected" data-sound="default">🪵 经典木鱼</button>
+            <button class="sound-btn" data-sound="bowl">🔔 颂钵</button>
+            <button class="sound-btn" data-sound="bell">🎐 风铃</button>
+            <button class="sound-btn" data-sound="drum">🥁 小鼓</button>
+            <button class="sound-btn" data-sound="click">👆 清脆</button>
+          </div>
+          <div class="file-upload">
+            <input type="file" id="customSound" accept="audio/*">
+            <label for="customSound">📁 上传自定义音效</label>
+            <span id="customSoundName" style="margin-left: 10px; font-size: 12px; color: #888;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 皮肤设置 -->
+      <div class="setting-group">
+        <h3>🎨 皮肤设置</h3>
+        <div class="skin-grid" id="skinGrid">
+          <!-- 皮肤选项由 JS 动态生成 -->
+        </div>
+      </div>
+
+      <!-- 自动敲击 -->
+      <div class="setting-group">
+        <h3>⚡ 自动敲击</h3>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">自动敲击</div>
+            <div class="setting-desc">开启后自动定时敲击木鱼</div>
+          </div>
+          <div class="toggle" id="autoToggle"></div>
+        </div>
+        <div class="setting-row" id="autoIntervalRow" style="display:none;">
+          <div>
+            <div class="setting-label">敲击间隔</div>
+            <div class="setting-desc">每隔多少秒敲击一次</div>
+          </div>
+          <input type="number" id="autoInterval" class="reminder-input" min="1" max="3600" value="10" placeholder="秒">
+        </div>
+      </div>
+
+      <!-- 提醒设置 -->
+      <div class="setting-group">
+        <h3>⏰ 提醒设置</h3>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">定时提醒</div>
+            <div class="setting-desc">每隔一段时间提醒你敲木鱼</div>
+          </div>
+          <div class="toggle" id="reminderToggle"></div>
+        </div>
+        <div class="setting-row" id="reminderIntervalRow" style="display:none;">
+          <div>
+            <div class="setting-label">提醒间隔</div>
+            <div class="setting-desc">每隔多少分钟提醒</div>
+          </div>
+          <div class="reminder-options">
+            <input type="number" id="reminderInterval" class="reminder-input" min="1" max="1440" value="30" placeholder="分钟">
+          </div>
+        </div>
+      </div>
+
+      <!-- 快捷键 -->
+      <div class="setting-group">
+        <h3>⌨️ 快捷键</h3>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">敲击快捷键</div>
+            <div class="setting-desc">按此键敲击木鱼（悬浮窗口内）</div>
+          </div>
+          <select id="hotkeySelect">
+            <option value="Space">空格键</option>
+            <option value="Enter">回车键</option>
+            <option value="KeyZ">Z 键</option>
+            <option value="KeyX">X 键</option>
+            <option value="KeyC">C 键</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="info">设置自动保存</div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 初始化 ==========
+    let fishWindow = null;
+    let settings = window.muyuDB.getSettings();
+    let autoTimer = null;
+    let reminderTimer = null;
+
+    // ========== 页面导航 ==========
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('page-' + btn.dataset.page).classList.add('active');
+
+        if (btn.dataset.page === 'stats') loadStats();
+      });
+    });
+
+    // ========== 主页逻辑 ==========
+    function updateMainStats() {
+      const todayStats = window.muyuDB.getTodayStats();
+      const historyStats = window.muyuDB.getHistoryStats(365);
+      document.getElementById('todayCount').textContent = todayStats.count;
+      document.getElementById('totalCount').textContent = historyStats.total;
+    }
+    updateMainStats();
+
+    // 打开木鱼窗口
+    document.getElementById('openBtn').addEventListener('click', () => {
+      if (fishWindow) {
+        fishWindow.show();
+        fishWindow.focus();
+        return;
+      }
+
+      fishWindow = utools.createBrowserWindow(
+        'wooden-fish.html',
+        {
+          show: false,
+          title: '电子木鱼',
+          width: 220,
+          height: 300,
+          frame: false,
+          transparent: true,
+          alwaysOnTop: true,
+          skipTaskbar: true,
+          resizable: false,
+          movable: true,
+          minimizable: false,
+          maximizable: false,
+          hasShadow: false,
+          thickFrame: false,
+          webPreferences: {
+            preload: 'wooden-fish-preload.js'
+          }
+        },
+        () => {
+          fishWindow.show();
+          try { fishWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+          document.getElementById('closeBtn').style.display = 'inline-block';
+          startAutoMode();
+          startReminderMode();
+        }
+      );
+
+      fishWindow.on('closed', () => {
+        fishWindow = null;
+        document.getElementById('closeBtn').style.display = 'none';
+        stopAutoMode();
+        stopReminderMode();
+      });
+    });
+
+    // 关闭木鱼窗口
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      if (fishWindow) {
+        fishWindow.close();
+      }
+    });
+
+    // 监听来自主窗口的消息
+    if (window.muyuDB) {
+      const { ipcRenderer } = require('electron');
+      ipcRenderer.on('muyu-knock', () => {
+        updateMainStats();
+      });
+    }
+
+    // ========== 自动敲击 ==========
+    function startAutoMode() {
+      if (!settings.autoInterval || settings.autoInterval <= 0) return;
+      stopAutoMode();
+      autoTimer = setInterval(() => {
+        if (fishWindow && !fishWindow.isDestroyed()) {
+          fishWindow.webContents.executeJavaScript('knock()');
+        }
+      }, settings.autoInterval * 1000);
+    }
+
+    function stopAutoMode() {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+    }
+
+    // ========== 提醒功能 ==========
+    function startReminderMode() {
+      if (!settings.reminderInterval || settings.reminderInterval <= 0) return;
+      stopReminderMode();
+      reminderTimer = setInterval(() => {
+        if (window.utools) {
+          utools.showNotification('🪵 该敲木鱼积功德啦！');
+        }
+      }, settings.reminderInterval * 60 * 1000);
+    }
+
+    function stopReminderMode() {
+      if (reminderTimer) {
+        clearInterval(reminderTimer);
+        reminderTimer = null;
+      }
+    }
+
+    // ========== 统计页 ==========
+    function loadStats() {
+      const history = window.muyuDB.getHistoryStats(30);
+      const todayStats = window.muyuDB.getTodayStats();
+
+      document.getElementById('stat-today').textContent = todayStats.count;
+      document.getElementById('stat-weekly').textContent = history.weekly;
+      document.getElementById('stat-monthly').textContent = history.monthly;
+
+      // 日历热力图
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      // 倒序显示（最近的在右下角）
+      const daily = [...history.daily].reverse();
+
+      daily.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'calendar-day';
+        const level = day.count === 0 ? 0 :
+                     day.count < 10 ? 1 :
+                     day.count < 30 ? 2 :
+                     day.count < 100 ? 3 : 4;
+        div.classList.add('level-' + level);
+        div.title = `${day.date}: ${day.count} 次`;
+        div.textContent = day.count || '';
+        grid.appendChild(div);
+      });
+    }
+
+    // ========== 设置页 ==========
+    // 皮肤定义
+    const skins = [
+      { id: 'classic', name: '经典木鱼', color: '#B8860B' },
+      { id: 'jade', name: '翡翠玉鱼', color: '#50C878' },
+      { id: 'gold', name: '黄金锦鲤', color: '#FFD700' },
+      { id: 'silver', name: '白银灵鱼', color: '#C0C0C0' },
+      { id: 'rose', name: '玫瑰金', color: '#E8A090' },
+      { id: 'dark', name: '暗夜玄鱼', color: '#2C2C2C' }
+    ];
+
+    // 渲染皮肤选项
+    const skinGrid = document.getElementById('skinGrid');
+    skins.forEach(skin => {
+      const div = document.createElement('div');
+      div.className = 'skin-item' + (settings.skin === skin.id ? ' selected' : '');
+      div.dataset.skin = skin.id;
+      div.innerHTML = `
+        <div class="skin-preview">
+          <svg viewBox="0 0 60 60">
+            <ellipse cx="30" cy="35" rx="25" ry="18" fill="${skin.color}" opacity="0.6"/>
+            <ellipse cx="30" cy="28" rx="22" ry="12" fill="${skin.color}"/>
+            <ellipse cx="30" cy="28" rx="12" ry="7" fill="${skin.color}" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="skin-name">${skin.name}</div>
+      `;
+      div.addEventListener('click', () => {
+        document.querySelectorAll('.skin-item').forEach(s => s.classList.remove('selected'));
+        div.classList.add('selected');
+        settings.skin = skin.id;
+        saveSettings();
+      });
+      skinGrid.appendChild(div);
+    });
+
+    // 音量滑块
+    const volumeSlider = document.getElementById('volumeSlider');
+    volumeSlider.value = settings.volume * 100;
+    volumeSlider.addEventListener('input', () => {
+      settings.volume = volumeSlider.value / 100;
+      saveSettings();
+    });
+
+    // 音效选择
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+      if (btn.dataset.sound === settings.sound) {
+        btn.classList.add('selected');
+      } else {
+        btn.classList.remove('selected');
+      }
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        settings.sound = btn.dataset.sound;
+        settings.customSoundPath = null;
+        document.getElementById('customSoundName').textContent = '';
+        saveSettings();
+      });
+    });
+
+    // 自定义音效
+    document.getElementById('customSound').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          settings.customSoundPath = ev.target.result;
+          settings.sound = 'custom';
+          document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('selected'));
+          document.getElementById('customSoundName').textContent = file.name;
+          saveSettings();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 自动敲击开关
+    const autoToggle = document.getElementById('autoToggle');
+    const autoIntervalRow = document.getElementById('autoIntervalRow');
+    if (settings.autoInterval > 0) {
+      autoToggle.classList.add('active');
+      autoIntervalRow.style.display = 'flex';
+    }
+    autoToggle.addEventListener('click', () => {
+      autoToggle.classList.toggle('active');
+      if (autoToggle.classList.contains('active')) {
+        autoIntervalRow.style.display = 'flex';
+        const val = parseInt(document.getElementById('autoInterval').value) || 10;
+        settings.autoInterval = val;
+        startAutoMode();
+      } else {
+        autoIntervalRow.style.display = 'none';
+        settings.autoInterval = 0;
+        stopAutoMode();
+      }
+      saveSettings();
+    });
+
+    document.getElementById('autoInterval').addEventListener('change', (e) => {
+      settings.autoInterval = parseInt(e.target.value) || 0;
+      saveSettings();
+      if (settings.autoInterval > 0 && fishWindow) {
+        startAutoMode();
+      }
+    });
+
+    // 提醒开关
+    const reminderToggle = document.getElementById('reminderToggle');
+    const reminderIntervalRow = document.getElementById('reminderIntervalRow');
+    if (settings.reminderInterval > 0) {
+      reminderToggle.classList.add('active');
+      reminderIntervalRow.style.display = 'flex';
+    }
+    reminderToggle.addEventListener('click', () => {
+      reminderToggle.classList.toggle('active');
+      if (reminderToggle.classList.contains('active')) {
+        reminderIntervalRow.style.display = 'flex';
+        const val = parseInt(document.getElementById('reminderInterval').value) || 30;
+        settings.reminderInterval = val;
+        startReminderMode();
+      } else {
+        reminderIntervalRow.style.display = 'none';
+        settings.reminderInterval = 0;
+        stopReminderMode();
+      }
+      saveSettings();
+    });
+
+    document.getElementById('reminderInterval').addEventListener('change', (e) => {
+      settings.reminderInterval = parseInt(e.target.value) || 0;
+      saveSettings();
+      if (settings.reminderInterval > 0 && fishWindow) {
+        startReminderMode();
+      }
+    });
+
+    // 快捷键
+    const hotkeySelect = document.getElementById('hotkeySelect');
+    hotkeySelect.value = settings.hotkey;
+    hotkeySelect.addEventListener('change', () => {
+      settings.hotkey = hotkeySelect.value;
+      saveSettings();
+    });
+
+    // 保存设置
+    function saveSettings() {
+      window.muyuDB.saveSettings(settings);
+    }
+  </script>
+</body>
+</html>

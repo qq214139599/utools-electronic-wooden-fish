@@ -1,0 +1,30 @@
+{
+  "pluginName": "电子木鱼",
+  "description": "桌面悬浮电子木鱼 - 敲击积功德，支持自动敲击、统计、皮肤、音效等",
+  "main": "index.html",
+  "logo": "logo.png",
+  "version": "2.0.0",
+  "features": [
+    {
+      "code": "wooden_fish",
+      "explain": "打开桌面电子木鱼",
+      "cmds": ["电子木鱼", "木鱼", "muyu", "功德", "敲木鱼"]
+    },
+    {
+      "code": "muyu_stats",
+      "explain": "查看功德统计",
+      "cmds": ["功德统计", "木鱼统计", "muyu stats"]
+    },
+    {
+      "code": "muyu_settings",
+      "explain": "木鱼设置",
+      "cmds": ["木鱼设置", "功德设置", "muyu settings"]
+    }
+  ],
+  "author": "Hermes",
+  "preload": "preload.js",
+  "pluginSetting": {
+    "single": true,
+    "height": 450
+  }
+}

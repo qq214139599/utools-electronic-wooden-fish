@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电子木鱼</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+
+    .fish-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      -webkit-app-region: no-drag;
+    }
+
+    /* 木鱼 SVG */
+    .fish-svg {
+      width: 130px;
+      height: 130px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    }
+    .fish-svg:active { transform: scale(0.88); }
+    .fish-svg.knock { animation: knock 0.15s ease; }
+
+    @keyframes knock {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.82); }
+      100% { transform: scale(1); }
+    }
+
+    /* 功德文字 */
+    .merit-text {
+      position: absolute;
+      font-size: 20px;
+      font-weight: bold;
+      pointer-events: none;
+      opacity: 0;
+      animation: floatUp 1.2s ease forwards;
+      text-shadow: 0 0 15px currentColor;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-90px) scale(1.4); }
+    }
+
+    /* 涟漪 */
+    .ripple {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid;
+      pointer-events: none;
+      animation: rippleAnim 0.7s ease-out forwards;
+    }
+    @keyframes rippleAnim {
+      0% { transform: scale(0.4); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    /* 计数器 */
+    .counter-area {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .counter {
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 0 15px currentColor;
+    }
+    .counter-label {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    /* 控制按钮 */
+    .controls {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+      -webkit-app-region: no-drag;
+    }
+    .ctrl-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 20px;
+      text-align: center;
+      opacity: 0.5;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover { opacity: 1; transform: scale(1.1); }
+    .btn-close { background: #ff5f57; color: #820000; }
+    .btn-reset { background: #28c840; color: #006500; }
+
+    /* 自动模式指示 */
+    .auto-indicator {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: rgba(102, 126, 234, 0.8);
+      color: #fff;
+      display: none;
+      -webkit-app-region: no-drag;
+    }
+    .auto-indicator.active { display: block; animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 自动模式指示 -->
+  <div class="auto-indicator" id="autoIndicator">⚡ 自动</div>
+
+  <!-- 控制按钮 -->
+  <div class="controls">
+    <button class="ctrl-btn btn-reset" id="resetBtn" title="重置计数">↺</button>
+    <button class="ctrl-btn btn-close" id="closeBtn" title="关闭">×</button>
+  </div>
+
+  <div class="fish-container">
+    <!-- 木鱼 SVG - 默认皮肤 -->
+    <svg class="fish-svg" id="fishSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="fishGrad" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" id="gradStop1" style="stop-color:#D4A574"/>
+          <stop offset="50%" id="gradStop2" style="stop-color:#B8860B"/>
+          <stop offset="100%" id="gradStop3" style="stop-color:#8B6914"/>
+        </radialGradient>
+        <radialGradient id="bowlGrad" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" id="bowlStop1" style="stop-color:#8B4513"/>
+          <stop offset="60%" id="bowlStop2" style="stop-color:#654321"/>
+          <stop offset="100%" id="bowlStop3" style="stop-color:#3E2723"/>
+        </radialGradient>
+        <filter id="shadow">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+
+      <!-- 底座 -->
+      <ellipse cx="100" cy="170" rx="60" ry="12" id="baseEl" fill="#3E2723" opacity="0.5"/>
+
+      <!-- 木鱼碗体 -->
+      <ellipse cx="100" cy="120" rx="70" ry="50" fill="url(#bowlGrad)" filter="url(#shadow)"/>
+
+      <!-- 木鱼顶部弧面 -->
+      <ellipse cx="100" cy="90" rx="65" ry="30" fill="url(#fishGrad)"/>
+
+      <!-- 敲击面 -->
+      <ellipse cx="100" cy="90" rx="35" ry="18" id="strikeFace" fill="#A0522D" stroke="#8B4513" stroke-width="1.5"/>
+
+      <!-- 敲击面中心 -->
+      <ellipse cx="100" cy="90" rx="20" ry="10" id="strikeCenter" fill="#CD853F"/>
+
+      <!-- 高光 -->
+      <ellipse cx="85" cy="78" rx="15" ry="6" fill="rgba(255,255,255,0.15)"/>
+
+      <!-- 侧面装饰纹 -->
+      <path d="M 35 120 Q 100 145 165 120" stroke="#D4A574" stroke-width="2" fill="none" opacity="0.4" id="decoLine1"/>
+      <path d="M 40 130 Q 100 152 160 130" stroke="#D4A574" stroke-width="1.5" fill="none" opacity="0.3" id="decoLine2"/>
+    </svg>
+
+    <div class="counter-area">
+      <div class="counter" id="counter" style="color: #ffd700;">0</div>
+      <div class="counter-label" id="counterLabel" style="color: #ffd700;">功德</div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 配置和状态 ==========
+    let count = 0;
+    let settings = {};
+    let audioCtx = null;
+    let customAudioBuffer = null;
+
+    const counterEl = document.getElementById('counter');
+    const counterLabelEl = document.getElementById('counterLabel');
+    const fishSvg = document.getElementById('fishSvg');
+    const container = document.querySelector('.fish-container');
+    const autoIndicator = document.getElementById('autoIndicator');
+
+    // 皮肤颜色配置
+    const skinColors = {
+      classic: {
+        main: ['#D4A574', '#B8860B', '#8B6914'],
+        bowl: ['#8B4513', '#654321', '#3E2723'],
+        strike: ['#A0522D', '#CD853F'],
+        accent: '#D4A574',
+        text: '#ffd700',
+        ripple: 'rgba(255, 215, 0, 0.6)'
+      },
+      jade: {
+        main: ['#90EE90', '#50C878', '#228B22'],
+        bowl: ['#2E8B57', '#20603D', '#145230'],
+        strike: ['#3CB371', '#66CDAA'],
+        accent: '#90EE90',
+        text: '#90EE90',
+        ripple: 'rgba(144, 238, 144, 0.6)'
+      },
+      gold: {
+        main: ['#FFE135', '#FFD700', '#DAA520'],
+        bowl: ['#B8860B', '#996515', '#704214'],
+        strike: ['#FFD700', '#FFEC8B'],
+        accent: '#FFE135',
+        text: '#FFD700',
+        ripple: 'rgba(255, 215, 0, 0.6)'
+      },
+      silver: {
+        main: ['#E8E8E8', '#C0C0C0', '#A8A8A8'],
+        bowl: ['#808080', '#606060', '#404040'],
+        strike: ['#C0C0C0', '#D3D3D3'],
+        accent: '#E8E8E8',
+        text: '#E0E0E0',
+        ripple: 'rgba(192, 192, 192, 0.6)'
+      },
+      rose: {
+        main: ['#FFB6C1', '#E8A090', '#C47A6C'],
+        bowl: ['#A0522D', '#8B4513', '#654321'],
+        strike: ['#E8A090', '#FFB6C1'],
+        accent: '#FFB6C1',
+        text: '#FFB6C1',
+        ripple: 'rgba(255, 182, 193, 0.6)'
+      },
+      dark: {
+        main: ['#505050', '#2C2C2C', '#1A1A1A'],
+        bowl: ['#1C1C1C', '#141414', '#0C0C0C'],
+        strike: ['#3C3C3C', '#4C4C4C'],
+        accent: '#606060',
+        text: '#888888',
+        ripple: 'rgba(100, 100, 100, 0.6)'
+      }
+    };
+
+    // ========== 初始化 ==========
+    function init() {
+      loadSettings();
+      loadCount();
+      applySkin();
+      checkAutoMode();
+    }
+
+    function loadSettings() {
+      if (window.utools) {
+        const saved = utools.dbStorage.getItem('muyu_settings');
+        settings = saved || {};
+      } else {
+        settings = JSON.parse(localStorage.getItem('muyu_settings') || '{}');
+      }
+      // 默认值
+      settings.volume = settings.volume ?? 0.7;
+      settings.skin = settings.skin || 'classic';
+      settings.sound = settings.sound || 'default';
+      settings.hotkey = settings.hotkey || 'Space';
+      settings.autoInterval = settings.autoInterval ?? 0;
+    }
+
+    function loadCount() {
+      if (window.utools) {
+        const today = new Date().toISOString().split('T')[0];
+        const stats = utools.dbStorage.getItem('muyu_stats_' + today) || { count: 0 };
+        count = stats.count;
+      } else {
+        count = parseInt(localStorage.getItem('muyu_count') || '0');
+      }
+      updateDisplay();
+    }
+
+    function saveCount() {
+      if (window.utools) {
+        const today = new Date().toISOString().split('T')[0];
+        let stats = utools.dbStorage.getItem('muyu_stats_' + today) || { count: 0, records: [] };
+        stats.count = count;
+        stats.records.push(Date.now());
+        utools.dbStorage.setItem('muyu_stats_' + today, stats);
+      } else {
+        localStorage.setItem('muyu_count', count.toString());
+      }
+    }
+
+    function updateDisplay() {
+      counterEl.textContent = count;
+    }
+
+    // ========== 皮肤 ==========
+    function applySkin() {
+      const skin = skinColors[settings.skin] || skinColors.classic;
+
+      // 更新渐变色
+      document.getElementById('gradStop1').style.stopColor = skin.main[0];
+      document.getElementById('gradStop2').style.stopColor = skin.main[1];
+      document.getElementById('gradStop3').style.stopColor = skin.main[2];
+
+      document.getElementById('bowlStop1').style.stopColor = skin.bowl[0];
+      document.getElementById('bowlStop2').style.stopColor = skin.bowl[1];
+      document.getElementById('bowlStop3').style.stopColor = skin.bowl[2];
+
+      document.getElementById('strikeFace').setAttribute('fill', skin.strike[0]);
+      document.getElementById('strikeCenter').setAttribute('fill', skin.strike[1]);
+      document.getElementById('baseEl').setAttribute('fill', skin.bowl[2]);
+
+      document.getElementById('decoLine1').setAttribute('stroke', skin.accent);
+      document.getElementById('decoLine2').setAttribute('stroke', skin.accent);
+
+      counterEl.style.color = skin.text;
+      counterLabelEl.style.color = skin.text;
+    }
+
+    // ========== 音效系统 ==========
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playMuyuSound() {
+      const ctx = getAudioCtx();
+      const vol = settings.volume;
+
+      if (settings.sound === 'custom' && settings.customSoundPath) {
+        playCustomSound(ctx, vol);
+        return;
+      }
+
+      switch (settings.sound) {
+        case 'bowl': playBowlSound(ctx, vol); break;
+        case 'bell': playBellSound(ctx, vol); break;
+        case 'drum': playDrumSound(ctx, vol); break;
+        case 'click': playClickSound(ctx, vol); break;
+        default: playDefaultSound(ctx, vol);
+      }
+    }
+
+    // 经典木鱼声
+    function playDefaultSound(ctx, vol) {
+      const now = ctx.currentTime;
+      // 主音
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
+      gain.gain.setValueAtTime(0.4 * vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.15);
+
+      // 共鸣
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(400, now);
+      osc2.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+      gain2.gain.setValueAtTime(0.2 * vol, now);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.start(now); osc2.stop(now + 0.25);
+
+      // 金属感
+      const osc3 = ctx.createOscillator();
+      const gain3 = ctx.createGain();
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(1200, now + 0.01);
+      osc3.frequency.exponentialRampToValueAtTime(600, now + 0.3);
+      gain3.gain.setValueAtTime(0.08 * vol, now + 0.01);
+      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc3.connect(gain3); gain3.connect(ctx.destination);
+      osc3.start(now + 0.01); osc3.stop(now + 0.35);
+    }
+
+    // 颂钵声
+    function playBowlSound(ctx, vol) {
+      const now = ctx.currentTime;
+      [261.63, 392, 523.25, 659.26].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15 * vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now + i * 0.02); osc.stop(now + 2);
+      });
+    }
+
+    // 风铃声
+    function playBellSound(ctx, vol) {
+      const now = ctx.currentTime;
+      const freqs = [1047, 1319, 1568];
+      freqs.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2 * vol, now + i * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8 + i * 0.1);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now + i * 0.05); osc.stop(now + 1);
+      });
+    }
+
+    // 小鼓声
+    function playDrumSound(ctx, vol) {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+      gain.gain.setValueAtTime(0.5 * vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.15);
+
+      // 噪音
+      const bufferSize = ctx.sampleRate * 0.1;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.3;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.3 * vol, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      noise.connect(noiseGain); noiseGain.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.1);
+    }
+
+    // 清脆点击声
+    function playClickSound(ctx, vol) {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(2000, now);
+      osc.frequency.exponentialRampToValueAtTime(500, now + 0.03);
+      gain.gain.setValueAtTime(0.3 * vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.05);
+    }
+
+    // 自定义音效
+    function playCustomSound(ctx, vol) {
+      if (customAudioBuffer) {
+        const source = ctx.createBufferSource();
+        source.buffer = customAudioBuffer;
+        const gain = ctx.createGain();
+        gain.gain.value = vol;
+        source.connect(gain); gain.connect(ctx.destination);
+        source.start();
+      } else {
+        // 尝试加载
+        fetch(settings.customSoundPath)
+          .then(r => r.arrayBuffer())
+          .then(buf => ctx.decodeAudioData(buf))
+          .then(decoded => {
+            customAudioBuffer = decoded;
+            playCustomSound(ctx, vol);
+          })
+          .catch(() => playDefaultSound(ctx, vol));
+      }
+    }
+
+    // ========== 视觉效果 ==========
+    function showMeritText() {
+      const skin = skinColors[settings.skin] || skinColors.classic;
+      const text = document.createElement('div');
+      text.className = 'merit-text';
+      text.textContent = '功德+1';
+      text.style.color = skin.text;
+
+      const offsetX = (Math.random() - 0.5) * 80;
+      text.style.left = `calc(50% + ${offsetX}px - 25px)`;
+      text.style.top = '25px';
+
+      container.appendChild(text);
+      setTimeout(() => text.remove(), 1200);
+    }
+
+    function showRipple() {
+      const skin = skinColors[settings.skin] || skinColors.classic;
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      ripple.style.borderColor = skin.ripple;
+      ripple.style.left = 'calc(50% - 50px)';
+      ripple.style.top = '20px';
+      container.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    }
+
+    // ========== 敲击 ==========
+    function knock() {
+      count++;
+      saveCount();
+      updateDisplay();
+
+      // 动画
+      fishSvg.classList.remove('knock');
+      void fishSvg.offsetWidth;
+      fishSvg.classList.add('knock');
+
+      // 音效
+      playMuyuSound();
+
+      // 视觉
+      showMeritText();
+      showRipple();
+
+      // 通知父窗口
+      if (window.utools) {
+        utools.sendToParent('muyu-knock', { count });
+      }
+    }
+
+    // ========== 事件 ==========
+    fishSvg.addEventListener('click', knock);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === settings.hotkey) {
+        e.preventDefault();
+        knock();
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      count = 0;
+      saveCount();
+      updateDisplay();
+    });
+
+    document.getElementById('closeBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.close();
+    });
+
+    // ========== 自动模式检查 ==========
+    function checkAutoMode() {
+      if (settings.autoInterval > 0) {
+        autoIndicator.classList.add('active');
+        setInterval(knock, settings.autoInterval * 1000);
+      }
+    }
+
+    // ========== 拖动支持 ==========
+    // 木鱼区域也可以拖动（非点击区域）
+    let isDragging = false;
+    let startX, startY;
+
+    document.addEventListener('mousedown', (e) => {
+      if (e.target === document.body || e.target.closest('.fish-container') && !e.target.closest('.fish-svg') && !e.target.closest('.ctrl-btn')) {
+        isDragging = true;
+        startX = e.screenX;
+        startY = e.screenY;
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging && window.utools) {
+        // Electron 会自动处理拖动
+      }
+    });
+
+    // ========== 启动 ==========
+    init();
+  </script>
+</body>
+</html>
