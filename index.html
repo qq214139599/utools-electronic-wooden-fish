@@ -630,6 +630,14 @@
       updateMainStats();
     });
 
+    // 监听倒计时结束
+    window.addEventListener('countdown-finished-event', (e) => {
+      const total = e.detail?.total || 0;
+      const mins = Math.floor(total / 60);
+      const secs = total % 60;
+      console.log(`倒计时结束：${mins}分${secs}秒`);
+    });
+
     // ========== 自动敲击 ==========
     function startAutoMode() {
       if (!settings.autoInterval || settings.autoInterval <= 0) return;

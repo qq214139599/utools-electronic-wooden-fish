@@ -89,6 +89,60 @@
       margin-top: 2px;
     }
 
+    /* 倒计时区域 */
+    .countdown-area {
+      margin-top: 8px;
+      text-align: center;
+      padding: 4px 12px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: all 0.2s ease;
+      min-width: 80px;
+    }
+    .countdown-area:hover {
+      background: rgba(0,0,0,0.3);
+    }
+    .countdown-area.editing {
+      background: rgba(102, 126, 234, 0.3);
+    }
+    .countdown-area.running {
+      background: rgba(255, 100, 100, 0.2);
+    }
+    .countdown-area.finished {
+      animation: alarmPulse 0.5s ease infinite;
+    }
+    @keyframes alarmPulse {
+      0%, 100% { background: rgba(255, 100, 100, 0.3); }
+      50% { background: rgba(255, 50, 50, 0.6); }
+    }
+    .countdown-display {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+    }
+    .countdown-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 1px;
+    }
+    .countdown-input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      width: 60px;
+      outline: none;
+    }
+    .countdown-input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+
     /* 控制按钮 */
     .controls {
       position: absolute;
@@ -205,6 +259,12 @@
     <div class="counter-area">
       <div class="counter" id="counter" style="color: #ffd700;">0</div>
       <div class="counter-label" id="counterLabel" style="color: #ffd700;">功德</div>
+    </div>
+
+    <!-- 倒计时区域 -->
+    <div class="countdown-area" id="countdownArea">
+      <div class="countdown-display" id="countdownDisplay">00:00</div>
+      <div class="countdown-label">双击设置倒计时</div>
     </div>
   </div>
 
@@ -596,6 +656,253 @@
           .catch(() => playDefaultSound(ctx, vol));
       }
     }
+
+    // ========== 倒计时系统 ==========
+    let countdownInterval = null;
+    let countdownRemaining = 0; // 剩余秒数
+    let countdownTotal = 0;
+    let isEditingCountdown = false;
+    let isCountdownFinished = false;
+
+    const countdownArea = document.getElementById('countdownArea');
+    const countdownDisplay = document.getElementById('countdownDisplay');
+    const countdownLabel = countdownArea.querySelector('.countdown-label');
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateCountdownDisplay() {
+      countdownDisplay.textContent = formatTime(countdownRemaining);
+    }
+
+    // 进入编辑模式
+    function enterEditMode() {
+      if (isCountdownFinished) {
+        stopCountdownAlarm();
+      }
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+
+      isEditingCountdown = true;
+      countdownArea.classList.add('editing');
+      countdownArea.classList.remove('running', 'finished');
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'countdown-input';
+      input.placeholder = '分:秒 或 分钟';
+      input.value = countdownRemaining > 0 ? formatTime(countdownRemaining) : '';
+
+      countdownDisplay.style.display = 'none';
+      countdownLabel.textContent = '输入后按回车或点击别处';
+      countdownArea.appendChild(input);
+
+      input.focus();
+      input.select();
+
+      // 失焦时开始倒计时
+      input.addEventListener('blur', () => {
+        parseAndStartCountdown(input.value);
+      });
+
+      // 回车开始倒计时
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          input.blur();
+        }
+        if (e.key === 'Escape') {
+          input.value = '';
+          input.blur();
+        }
+      });
+    }
+
+    // 解析输入并开始倒计时
+    function parseAndStartCountdown(inputValue) {
+      if (!isEditingCountdown) return;
+
+      // 清理编辑状态
+      isEditingCountdown = false;
+      countdownArea.classList.remove('editing');
+      const input = countdownArea.querySelector('.countdown-input');
+      if (input) input.remove();
+      countdownDisplay.style.display = '';
+
+      // 解析时间
+      let totalSeconds = 0;
+      const trimmed = inputValue.trim();
+
+      if (!trimmed) {
+        countdownRemaining = 0;
+        updateCountdownDisplay();
+        countdownLabel.textContent = '双击设置倒计时';
+        return;
+      }
+
+      // 格式: 1:30 (1分30秒)
+      if (trimmed.includes(':')) {
+        const parts = trimmed.split(':');
+        const mins = parseInt(parts[0]) || 0;
+        const secs = parseInt(parts[1]) || 0;
+        totalSeconds = mins * 60 + secs;
+      }
+      // 格式: 1.5 (1.5分钟 = 90秒)
+      else if (trimmed.includes('.')) {
+        const mins = parseFloat(trimmed);
+        totalSeconds = Math.round(mins * 60);
+      }
+      // 格式: 90 (秒)
+      else if (parseInt(trimmed) > 60) {
+        totalSeconds = parseInt(trimmed);
+      }
+      // 格式: 5 (分钟)
+      else {
+        totalSeconds = parseInt(trimmed) * 60;
+      }
+
+      if (totalSeconds <= 0) {
+        countdownRemaining = 0;
+        updateCountdownDisplay();
+        countdownLabel.textContent = '双击设置倒计时';
+        return;
+      }
+
+      startCountdown(totalSeconds);
+    }
+
+    // 开始倒计时
+    function startCountdown(seconds) {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+
+      countdownRemaining = seconds;
+      countdownTotal = seconds;
+      isCountdownFinished = false;
+
+      countdownArea.classList.add('running');
+      countdownArea.classList.remove('finished');
+      countdownLabel.textContent = '点击暂停';
+
+      updateCountdownDisplay();
+
+      countdownInterval = setInterval(() => {
+        countdownRemaining--;
+        updateCountdownDisplay();
+
+        if (countdownRemaining <= 0) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          onCountdownFinished();
+        }
+      }, 1000);
+    }
+
+    // 暂停倒计时
+    function pauseCountdown() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        countdownArea.classList.remove('running');
+        countdownLabel.textContent = '点击继续';
+      }
+    }
+
+    // 继续倒计时
+    function resumeCountdown() {
+      if (countdownRemaining > 0 && !countdownInterval) {
+        countdownArea.classList.add('running');
+        countdownLabel.textContent = '点击暂停';
+
+        countdownInterval = setInterval(() => {
+          countdownRemaining--;
+          updateCountdownDisplay();
+
+          if (countdownRemaining <= 0) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            onCountdownFinished();
+          }
+        }, 1000);
+      }
+    }
+
+    // 倒计时结束
+    function onCountdownFinished() {
+      isCountdownFinished = true;
+      countdownArea.classList.remove('running');
+      countdownArea.classList.add('finished');
+      countdownLabel.textContent = '点击停止';
+
+      // 播放警报音
+      playAlarmSound();
+
+      // 系统通知
+      if (window.utools) {
+        utools.showNotification('⏰ 倒计时结束！该休息一下或继续敲木鱼啦！');
+      }
+
+      // 通知主窗口
+      if (window.utools) {
+        utools.sendToParent('countdown-finished', { total: countdownTotal });
+      }
+    }
+
+    // 停止警报
+    function stopCountdownAlarm() {
+      isCountdownFinished = false;
+      countdownArea.classList.remove('finished');
+      countdownRemaining = 0;
+      updateCountdownDisplay();
+      countdownLabel.textContent = '双击设置倒计时';
+    }
+
+    // 播放警报音效
+    function playAlarmSound() {
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      const vol = settings.volume || 0.7;
+
+      // 警报音 - 连续的蜂鸣声
+      for (let i = 0; i < 6; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = i % 2 === 0 ? 880 : 660;
+        gain.gain.setValueAtTime(0.3 * vol, now + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.2 + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.2);
+        osc.stop(now + i * 0.2 + 0.15);
+      }
+    }
+
+    // 倒计时区域点击事件
+    countdownArea.addEventListener('click', (e) => {
+      if (isEditingCountdown) return;
+      if (e.target.classList.contains('countdown-input')) return;
+
+      if (isCountdownFinished) {
+        stopCountdownAlarm();
+      } else if (countdownInterval) {
+        pauseCountdown();
+      } else if (countdownRemaining > 0) {
+        resumeCountdown();
+      }
+    });
+
+    // 双击进入编辑模式
+    countdownArea.addEventListener('dblclick', (e) => {
+      if (isEditingCountdown) return;
+      e.preventDefault();
+      enterEditMode();
+    });
 
     // ========== 视觉效果 ==========
     function showMeritText() {

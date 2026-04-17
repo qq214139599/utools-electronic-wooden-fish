@@ -90,3 +90,8 @@ ipcRenderer.on("muyu-close", () => {
 ipcRenderer.on("muyu-window-ready", (event, data) => {
   console.log("悬浮窗口就绪:", data);
 });
+
+ipcRenderer.on("countdown-finished", (event, data) => {
+  console.log("倒计时结束:", data);
+  window.dispatchEvent(new CustomEvent('countdown-finished-event', { detail: data }));
+});
