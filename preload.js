@@ -63,7 +63,6 @@ window.muyuDB = {
   // 获取所有日期的统计数据
   getAllStats() {
     const stats = {};
-    // 遍历所有存储的键
     const allData = utools.dbStorage.getAll();
     for (const key of Object.keys(allData)) {
       if (key.startsWith('muyu_stats_')) {
@@ -77,13 +76,16 @@ window.muyuDB = {
 
 // 接收悬浮窗口发来的消息
 ipcRenderer.on("muyu-knock", (event, data) => {
-  console.log("功德 +1, 总计:", data.count);
+  console.log("功德 +1, 总计:", data?.count);
+  // 转发到页面
+  window.dispatchEvent(new CustomEvent('muyu-knock-event', { detail: data }));
 });
 
 ipcRenderer.on("muyu-close", () => {
   console.log("木鱼窗口已关闭");
+  window.dispatchEvent(new CustomEvent('muyu-close-event'));
 });
 
-ipcRenderer.on("muyu-window-ready", (event, winId) => {
-  console.log("悬浮窗口就绪:", winId);
+ipcRenderer.on("muyu-window-ready", (event, data) => {
+  console.log("悬浮窗口就绪:", data);
 });

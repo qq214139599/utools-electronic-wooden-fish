@@ -132,11 +132,27 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.6; }
     }
+
+    /* 当前音效指示 */
+    .sound-indicator {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      color: #ccc;
+      -webkit-app-region: no-drag;
+    }
   </style>
 </head>
 <body>
   <!-- 自动模式指示 -->
   <div class="auto-indicator" id="autoIndicator">⚡ 自动</div>
+
+  <!-- 当前音效指示 -->
+  <div class="sound-indicator" id="soundIndicator">🪵 经典</div>
 
   <!-- 控制按钮 -->
   <div class="controls">
@@ -145,7 +161,7 @@
   </div>
 
   <div class="fish-container">
-    <!-- 木鱼 SVG - 默认皮肤 -->
+    <!-- 木鱼 SVG -->
     <svg class="fish-svg" id="fishSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="fishGrad" cx="40%" cy="35%" r="60%">
@@ -198,12 +214,14 @@
     let settings = {};
     let audioCtx = null;
     let customAudioBuffer = null;
+    let autoTimer = null;
 
     const counterEl = document.getElementById('counter');
     const counterLabelEl = document.getElementById('counterLabel');
     const fishSvg = document.getElementById('fishSvg');
     const container = document.querySelector('.fish-container');
     const autoIndicator = document.getElementById('autoIndicator');
+    const soundIndicator = document.getElementById('soundIndicator');
 
     // 皮肤颜色配置
     const skinColors = {
@@ -257,27 +275,103 @@
       }
     };
 
+    // 音效名称映射
+    const soundNames = {
+      default: '🪵 经典',
+      bowl: '🔔 颂钵',
+      bell: '🎐 风铃',
+      drum: '🥁 小鼓',
+      click: '👆 清脆',
+      custom: '🎵 自定义'
+    };
+
     // ========== 初始化 ==========
     function init() {
       loadSettings();
       loadCount();
       applySkin();
-      checkAutoMode();
+      updateSoundIndicator();
+      setupAutoMode();
+
+      // 监听主窗口发来的设置更新（IPC方式）
+      if (window.utools) {
+        try {
+          const { ipcRenderer } = require('electron');
+          ipcRenderer.on('settings-updated', (event, newSettings) => {
+            console.log('[IPC] 收到设置更新:', newSettings);
+            applyNewSettings(newSettings);
+          });
+        } catch (e) {
+          console.warn('IPC监听失败:', e);
+        }
+      }
+
+      // 监听CustomEvent方式（备用）
+      window.addEventListener('settings-updated', (e) => {
+        console.log('[Event] 收到设置更新:', e.detail);
+        applyNewSettings(e.detail);
+      });
+
+      // 定期检查设置变化（防止IPC丢失）
+      setInterval(reloadSettings, 2000);
     }
 
     function loadSettings() {
       if (window.utools) {
         const saved = utools.dbStorage.getItem('muyu_settings');
-        settings = saved || {};
+        settings = saved ? { ...getDefaultSettings(), ...saved } : getDefaultSettings();
       } else {
-        settings = JSON.parse(localStorage.getItem('muyu_settings') || '{}');
+        settings = getDefaultSettings();
       }
-      // 默认值
-      settings.volume = settings.volume ?? 0.7;
-      settings.skin = settings.skin || 'classic';
-      settings.sound = settings.sound || 'default';
-      settings.hotkey = settings.hotkey || 'Space';
-      settings.autoInterval = settings.autoInterval ?? 0;
+      console.log('加载设置:', settings);
+    }
+
+    function getDefaultSettings() {
+      return {
+        volume: 0.7,
+        skin: 'classic',
+        sound: 'default',
+        autoInterval: 0,
+        reminderInterval: 0,
+        customSoundPath: null,
+        hotkey: 'Space'
+      };
+    }
+
+    // 应用新设置
+    function applyNewSettings(newSettings) {
+      if (!newSettings) return;
+      settings = { ...settings, ...newSettings };
+      console.log('应用新设置:', settings);
+
+      // 更新皮肤
+      applySkin();
+
+      // 更新音效指示
+      updateSoundIndicator();
+
+      // 重新配置自动模式
+      setupAutoMode();
+
+      // 重置自定义音频缓存（如果音效变了）
+      customAudioBuffer = null;
+    }
+
+    function reloadSettings() {
+      if (window.utools) {
+        const saved = utools.dbStorage.getItem('muyu_settings');
+        if (saved) {
+          const newSettings = { ...getDefaultSettings(), ...saved };
+          // 检查是否有变化
+          if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
+            console.log('检测到设置变化，重新加载');
+            settings = newSettings;
+            applySkin();
+            updateSoundIndicator();
+            setupAutoMode();
+          }
+        }
+      }
     }
 
     function loadCount() {
@@ -311,7 +405,6 @@
     function applySkin() {
       const skin = skinColors[settings.skin] || skinColors.classic;
 
-      // 更新渐变色
       document.getElementById('gradStop1').style.stopColor = skin.main[0];
       document.getElementById('gradStop2').style.stopColor = skin.main[1];
       document.getElementById('gradStop3').style.stopColor = skin.main[2];
@@ -331,6 +424,11 @@
       counterLabelEl.style.color = skin.text;
     }
 
+    function updateSoundIndicator() {
+      const name = soundNames[settings.sound] || '🪵 经典';
+      soundIndicator.textContent = name;
+    }
+
     // ========== 音效系统 ==========
     function getAudioCtx() {
       if (!audioCtx) {
@@ -342,6 +440,8 @@
     function playMuyuSound() {
       const ctx = getAudioCtx();
       const vol = settings.volume;
+
+      console.log('播放音效:', settings.sound, '音量:', vol);
 
       if (settings.sound === 'custom' && settings.customSoundPath) {
         playCustomSound(ctx, vol);
@@ -360,7 +460,6 @@
     // 经典木鱼声
     function playDefaultSound(ctx, vol) {
       const now = ctx.currentTime;
-      // 主音
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
@@ -371,7 +470,6 @@
       osc.connect(gain); gain.connect(ctx.destination);
       osc.start(now); osc.stop(now + 0.15);
 
-      // 共鸣
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
@@ -382,7 +480,6 @@
       osc2.connect(gain2); gain2.connect(ctx.destination);
       osc2.start(now); osc2.stop(now + 0.25);
 
-      // 金属感
       const osc3 = ctx.createOscillator();
       const gain3 = ctx.createGain();
       osc3.type = 'sine';
@@ -438,7 +535,6 @@
       osc.connect(gain); gain.connect(ctx.destination);
       osc.start(now); osc.stop(now + 0.15);
 
-      // 噪音
       const bufferSize = ctx.sampleRate * 0.1;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -478,7 +574,6 @@
         source.connect(gain); gain.connect(ctx.destination);
         source.start();
       } else {
-        // 尝试加载
         fetch(settings.customSoundPath)
           .then(r => r.arrayBuffer())
           .then(buf => ctx.decodeAudioData(buf))
@@ -517,25 +612,37 @@
       setTimeout(() => ripple.remove(), 700);
     }
 
+    // ========== 自动模式 ==========
+    function setupAutoMode() {
+      // 清除旧的定时器
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+
+      if (settings.autoInterval > 0) {
+        autoIndicator.classList.add('active');
+        autoTimer = setInterval(knock, settings.autoInterval * 1000);
+        console.log('自动敲击已启用，间隔:', settings.autoInterval, '秒');
+      } else {
+        autoIndicator.classList.remove('active');
+      }
+    }
+
     // ========== 敲击 ==========
     function knock() {
       count++;
       saveCount();
       updateDisplay();
 
-      // 动画
       fishSvg.classList.remove('knock');
       void fishSvg.offsetWidth;
       fishSvg.classList.add('knock');
 
-      // 音效
       playMuyuSound();
-
-      // 视觉
       showMeritText();
       showRipple();
 
-      // 通知父窗口
       if (window.utools) {
         utools.sendToParent('muyu-knock', { count });
       }
@@ -561,33 +668,6 @@
     document.getElementById('closeBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       window.close();
-    });
-
-    // ========== 自动模式检查 ==========
-    function checkAutoMode() {
-      if (settings.autoInterval > 0) {
-        autoIndicator.classList.add('active');
-        setInterval(knock, settings.autoInterval * 1000);
-      }
-    }
-
-    // ========== 拖动支持 ==========
-    // 木鱼区域也可以拖动（非点击区域）
-    let isDragging = false;
-    let startX, startY;
-
-    document.addEventListener('mousedown', (e) => {
-      if (e.target === document.body || e.target.closest('.fish-container') && !e.target.closest('.fish-svg') && !e.target.closest('.ctrl-btn')) {
-        isDragging = true;
-        startX = e.screenX;
-        startY = e.screenY;
-      }
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging && window.utools) {
-        // Electron 会自动处理拖动
-      }
     });
 
     // ========== 启动 ==========

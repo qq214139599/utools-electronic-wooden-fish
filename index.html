@@ -569,13 +569,10 @@
       }
     });
 
-    // 监听来自主窗口的消息
-    if (window.muyuDB) {
-      const { ipcRenderer } = require('electron');
-      ipcRenderer.on('muyu-knock', () => {
-        updateMainStats();
-      });
-    }
+    // 监听来自悬浮窗口的敲击消息（通过 preload.js 转发）
+    window.addEventListener('muyu-knock-event', () => {
+      updateMainStats();
+    });
 
     // ========== 自动敲击 ==========
     function startAutoMode() {
@@ -791,6 +788,12 @@
     // 保存设置
     function saveSettings() {
       window.muyuDB.saveSettings(settings);
+
+      // 通知悬浮窗口设置已更新
+      if (fishWindow && !fishWindow.isDestroyed()) {
+        fishWindow.webContents.send('settings-updated', settings);
+        console.log('已通知悬浮窗口设置更新:', settings);
+      }
     }
   </script>
 </body>
