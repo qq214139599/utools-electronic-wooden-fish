@@ -12,7 +12,8 @@ window.muyuDB = {
       reminderInterval: 0, // 0 = 关闭
       customSoundPath: null,
       hotkey: 'Space',
-      opacity: 100 // 窗口透明度 20-100
+      opacity: 100, // 窗口透明度 20-100
+      showCountdown: true // 是否显示倒计时
     };
     const saved = utools.dbStorage.getItem('muyu_settings');
     return saved ? { ...defaults, ...saved } : defaults;

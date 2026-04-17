@@ -442,6 +442,13 @@
             <div class="setting-desc" id="opacityValue">100%</div>
           </div>
         </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">显示倒计时</div>
+            <div class="setting-desc">在木鱼下方显示倒计时模块</div>
+          </div>
+          <div class="toggle" id="countdownToggle"></div>
+        </div>
       </div>
 
       <!-- 自动敲击 -->
@@ -871,6 +878,17 @@
         }
       }
 
+      saveSettings();
+    });
+
+    // 倒计时开关
+    const countdownToggle = document.getElementById('countdownToggle');
+    if (settings.showCountdown !== false) {
+      countdownToggle.classList.add('active');
+    }
+    countdownToggle.addEventListener('click', () => {
+      countdownToggle.classList.toggle('active');
+      settings.showCountdown = countdownToggle.classList.contains('active');
       saveSettings();
     });
 
