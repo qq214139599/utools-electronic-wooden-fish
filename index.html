@@ -509,6 +509,21 @@
   <script>
     // ========== 初始化 ==========
     let fishWindow = null;
+
+    // 安全检查窗口是否可用
+    function isWindowValid(win) {
+      if (!win) return false;
+      try {
+        // 尝试调用一个方法来检查窗口是否还存在
+        if (typeof win.isDestroyed === 'function') {
+          return !win.isDestroyed();
+        }
+        // 备用检查：尝试获取窗口属性
+        return win !== null && typeof win === 'object';
+      } catch (e) {
+        return false;
+      }
+    }
     let settings = window.muyuDB.getSettings();
     let autoTimer = null;
     let reminderTimer = null;
@@ -564,12 +579,25 @@
           }
         },
         () => {
-          fishWindow.show();
-          try { fishWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+          try {
+            fishWindow.show();
+          } catch (e) {
+            console.warn('显示窗口失败:', e);
+          }
+
+          try {
+            fishWindow.setAlwaysOnTop(true, 'screen-saver');
+          } catch (e) {
+            console.warn('设置置顶失败:', e);
+          }
 
           // 应用透明度
           const opacity = (settings.opacity ?? 100) / 100;
-          try { fishWindow.setOpacity(opacity); } catch {}
+          try {
+            fishWindow.setOpacity(opacity);
+          } catch (e) {
+            console.warn('设置初始透明度失败:', e);
+          }
 
           document.getElementById('closeBtn').style.display = 'inline-block';
           startAutoMode();
@@ -577,12 +605,17 @@
         }
       );
 
-      fishWindow.on('closed', () => {
-        fishWindow = null;
-        document.getElementById('closeBtn').style.display = 'none';
-        stopAutoMode();
-        stopReminderMode();
-      });
+      // 注意：uTools BrowserWindow 可能不支持 .on() 事件
+      // 使用定时器检查窗口状态
+      const checkWindowInterval = setInterval(() => {
+        if (!isWindowValid(fishWindow)) {
+          clearInterval(checkWindowInterval);
+          fishWindow = null;
+          document.getElementById('closeBtn').style.display = 'none';
+          stopAutoMode();
+          stopReminderMode();
+        }
+      }, 1000);
     });
 
     // 关闭木鱼窗口
@@ -602,8 +635,12 @@
       if (!settings.autoInterval || settings.autoInterval <= 0) return;
       stopAutoMode();
       autoTimer = setInterval(() => {
-        if (fishWindow && !fishWindow.isDestroyed()) {
-          fishWindow.webContents.executeJavaScript('knock()');
+        if (isWindowValid(fishWindow)) {
+          try {
+            fishWindow.webContents.executeJavaScript('knock()');
+          } catch (e) {
+            console.warn('自动敲击失败:', e);
+          }
         }
       }, settings.autoInterval * 1000);
     }
@@ -806,16 +843,27 @@
     opacitySlider.value = settings.opacity ?? 100;
     opacityValue.textContent = opacitySlider.value + '%';
 
+    // 实时更新显示（不应用到窗口，避免卡顿）
     opacitySlider.addEventListener('input', () => {
       const val = opacitySlider.value;
       opacityValue.textContent = val + '%';
       settings.opacity = parseInt(val);
-      saveSettings();
+    });
 
-      // 实时应用透明度到悬浮窗口
-      if (fishWindow && !fishWindow.isDestroyed()) {
-        fishWindow.setOpacity(val / 100);
+    // 松开滑块时应用并保存设置
+    opacitySlider.addEventListener('change', () => {
+      const val = opacitySlider.value;
+
+      // 应用透明度到悬浮窗口
+      if (isWindowValid(fishWindow)) {
+        try {
+          fishWindow.setOpacity(val / 100);
+        } catch (e) {
+          console.warn('设置透明度失败:', e);
+        }
       }
+
+      saveSettings();
     });
 
     // 快捷键
@@ -831,9 +879,13 @@
       window.muyuDB.saveSettings(settings);
 
       // 通知悬浮窗口设置已更新
-      if (fishWindow && !fishWindow.isDestroyed()) {
-        fishWindow.webContents.send('settings-updated', settings);
-        console.log('已通知悬浮窗口设置更新:', settings);
+      if (isWindowValid(fishWindow)) {
+        try {
+          fishWindow.webContents.send('settings-updated', settings);
+          console.log('已通知悬浮窗口设置更新:', settings);
+        } catch (e) {
+          console.warn('通知悬浮窗口失败:', e);
+        }
       }
     }
   </script>
