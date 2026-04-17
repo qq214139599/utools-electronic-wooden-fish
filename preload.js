@@ -11,7 +11,8 @@ window.muyuDB = {
       autoInterval: 0, // 0 = 关闭
       reminderInterval: 0, // 0 = 关闭
       customSoundPath: null,
-      hotkey: 'Space'
+      hotkey: 'Space',
+      opacity: 100 // 窗口透明度 20-100
     };
     const saved = utools.dbStorage.getItem('muyu_settings');
     return saved ? { ...defaults, ...saved } : defaults;

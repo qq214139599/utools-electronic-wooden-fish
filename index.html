@@ -426,6 +426,24 @@
         </div>
       </div>
 
+      <!-- 透明度设置 -->
+      <div class="setting-group">
+        <h3>👁️ 显示设置</h3>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">窗口透明度</div>
+            <div class="setting-desc">调整木鱼窗口的透明程度</div>
+          </div>
+          <input type="range" id="opacitySlider" min="20" max="100" value="100">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">当前透明度</div>
+            <div class="setting-desc" id="opacityValue">100%</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 自动敲击 -->
       <div class="setting-group">
         <h3>⚡ 自动敲击</h3>
@@ -548,6 +566,11 @@
         () => {
           fishWindow.show();
           try { fishWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+
+          // 应用透明度
+          const opacity = (settings.opacity ?? 100) / 100;
+          try { fishWindow.setOpacity(opacity); } catch {}
+
           document.getElementById('closeBtn').style.display = 'inline-block';
           startAutoMode();
           startReminderMode();
@@ -774,6 +797,24 @@
       saveSettings();
       if (settings.reminderInterval > 0 && fishWindow) {
         startReminderMode();
+      }
+    });
+
+    // 透明度设置
+    const opacitySlider = document.getElementById('opacitySlider');
+    const opacityValue = document.getElementById('opacityValue');
+    opacitySlider.value = settings.opacity ?? 100;
+    opacityValue.textContent = opacitySlider.value + '%';
+
+    opacitySlider.addEventListener('input', () => {
+      const val = opacitySlider.value;
+      opacityValue.textContent = val + '%';
+      settings.opacity = parseInt(val);
+      saveSettings();
+
+      // 实时应用透明度到悬浮窗口
+      if (fishWindow && !fishWindow.isDestroyed()) {
+        fishWindow.setOpacity(val / 100);
       }
     });
 

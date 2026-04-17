@@ -16,6 +16,7 @@
       overflow: hidden;
       user-select: none;
       -webkit-app-region: drag;
+      transition: opacity 0.3s ease;
     }
 
     .fish-container {
@@ -292,6 +293,7 @@
       applySkin();
       updateSoundIndicator();
       setupAutoMode();
+      applyOpacity();
 
       // 监听主窗口发来的设置更新（IPC方式）
       if (window.utools) {
@@ -353,8 +355,18 @@
       // 重新配置自动模式
       setupAutoMode();
 
+      // 应用透明度
+      applyOpacity();
+
       // 重置自定义音频缓存（如果音效变了）
       customAudioBuffer = null;
+    }
+
+    // 应用透明度
+    function applyOpacity() {
+      const opacity = (settings.opacity ?? 100) / 100;
+      document.body.style.opacity = opacity;
+      console.log('应用透明度:', opacity);
     }
 
     function reloadSettings() {
@@ -369,6 +381,7 @@
             applySkin();
             updateSoundIndicator();
             setupAutoMode();
+            applyOpacity();
           }
         }
       }
