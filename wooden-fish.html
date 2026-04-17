@@ -111,12 +111,15 @@
 
     /* 木鱼 SVG */
     .fish-svg {
-      width: 130px;
-      height: 150px;
+      width: 60%;
+      height: auto;
+      max-width: 130px;
+      min-width: 60px;
       cursor: pointer;
       transition: transform 0.08s ease;
       filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
       -webkit-app-region: no-drag;
+      flex-shrink: 0;
     }
     .fish-svg:active { transform: scale(0.88); }
     .fish-svg.knock { animation: knock 0.15s ease; }
@@ -152,8 +155,16 @@
       text-align: center;
       -webkit-app-region: no-drag;
     }
-    .counter { font-size: 26px; font-weight: bold; text-shadow: 0 0 15px currentColor; }
-    .counter-label { font-size: 10px; opacity: 0.7; margin-top: 1px; }
+    .counter { 
+      font-size: clamp(16px, 4vw, 26px); 
+      font-weight: bold; 
+      text-shadow: 0 0 15px currentColor; 
+    }
+    .counter-label { 
+      font-size: clamp(8px, 2vw, 10px); 
+      opacity: 0.7; 
+      margin-top: 1px; 
+    }
 
     /* 倒计时区域 */
     .countdown-area {
@@ -173,8 +184,17 @@
     .countdown-area.running { background: rgba(255, 100, 100, 0.2); }
     .countdown-area.finished { animation: alarmPulse 0.5s ease infinite; }
     @keyframes alarmPulse { 0%, 100% { background: rgba(255, 100, 100, 0.3); } 50% { background: rgba(255, 50, 50, 0.6); } }
-    .countdown-display { font-size: 15px; font-weight: bold; color: #fff; font-family: 'Courier New', monospace; }
-    .countdown-label { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+    .countdown-display { 
+      font-size: clamp(12px, 3vw, 15px); 
+      font-weight: bold; 
+      color: #fff; 
+      font-family: 'Courier New', monospace; 
+    }
+    .countdown-label { 
+      font-size: clamp(7px, 1.8vw, 9px); 
+      color: rgba(255,255,255,0.5); 
+      margin-top: 1px; 
+    }
     .countdown-input {
       background: transparent; border: none; color: #fff;
       font-size: 15px; font-weight: bold; font-family: 'Courier New', monospace;
