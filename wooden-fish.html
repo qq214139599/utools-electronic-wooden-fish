@@ -179,6 +179,11 @@
       min-width: 80px;
     }
     .countdown-area.hidden { display: none; }
+    .fish-svg.hidden, .counter-area.hidden { display: none; }
+    body.fish-hidden .content-area { justify-content: flex-start; padding: 0; }
+    body.fish-hidden .countdown-area { margin-top: 3px; padding: 3px 12px; }
+    body.fish-hidden .indicators { display: none; }
+    body.fish-hidden .resize-handle { display: none; }
     .countdown-area:hover { background: rgba(0,0,0,0.3); }
     .countdown-area.editing { background: rgba(102, 126, 234, 0.3); }
     .countdown-area.running { background: rgba(255, 100, 100, 0.2); }
@@ -351,7 +356,7 @@
 
     // ========== 初始化 ==========
     function init() {
-      loadSettings(); loadCount(); applySkin(); updateSoundIndicator(); setupAutoMode(); applyCountdownVisibility();
+      loadSettings(); loadCount(); applySkin(); updateSoundIndicator(); setupAutoMode(); applyCountdownVisibility(); applyFishVisibility();
       if (window.utools) {
         try { const { ipcRenderer } = require('electron'); ipcRenderer.on('settings-updated', (e, s) => applyNewSettings(s)); } catch(e) {}
       }
@@ -362,12 +367,18 @@
       if (window.utools) { const s = utools.dbStorage.getItem('muyu_settings'); settings = s ? {...getDefaultSettings(),...s} : getDefaultSettings(); }
       else settings = getDefaultSettings();
     }
-    function getDefaultSettings() { return { volume:0.7, skin:'classic', sound:'default', autoInterval:0, reminderInterval:0, customSoundPath:null, hotkey:'Space', opacity:100, showCountdown:true }; }
-    function applyNewSettings(s) { if(!s)return; settings={...settings,...s}; applySkin(); updateSoundIndicator(); setupAutoMode(); applyOpacity(); applyCountdownVisibility(); customAudioBuffer=null; }
+    function getDefaultSettings() { return { volume:0.7, skin:'classic', sound:'default', autoInterval:0, reminderInterval:0, customSoundPath:null, hotkey:'Space', opacity:100, showCountdown:true, showFish:true }; }
+    function applyNewSettings(s) { if(!s)return; settings={...settings,...s}; applySkin(); updateSoundIndicator(); setupAutoMode(); applyOpacity(); applyCountdownVisibility(); applyFishVisibility(); customAudioBuffer=null; }
     function applyCountdownVisibility() { countdownArea.classList.toggle('hidden', settings.showCountdown===false); }
+    function applyFishVisibility() {
+      const hide = settings.showFish === false;
+      fishSvg.classList.toggle('hidden', hide);
+      document.querySelector('.counter-area').classList.toggle('hidden', hide);
+      document.body.classList.toggle('fish-hidden', hide);
+    }
     function applyOpacity() { document.body.style.opacity=(settings.opacity??100)/100; }
     function reloadSettings() {
-      if(window.utools){const s=utools.dbStorage.getItem('muyu_settings');if(s){const n={...getDefaultSettings(),...s};if(JSON.stringify(n)!==JSON.stringify(settings)){settings=n;applySkin();updateSoundIndicator();setupAutoMode();applyOpacity();applyCountdownVisibility();}}}
+      if(window.utools){const s=utools.dbStorage.getItem('muyu_settings');if(s){const n={...getDefaultSettings(),...s};if(JSON.stringify(n)!==JSON.stringify(settings)){settings=n;applySkin();updateSoundIndicator();setupAutoMode();applyOpacity();applyCountdownVisibility();applyFishVisibility();}}}
     }
     function loadCount() {
       if(window.utools){const t=new Date().toISOString().split('T')[0];count=(utools.dbStorage.getItem('muyu_stats_'+t)||{count:0}).count;}else count=parseInt(localStorage.getItem('muyu_count')||'0');
@@ -470,7 +481,14 @@
     let currentZoom=1;
     function loadZoom(){if(window.utools){const s=utools.dbStorage.getItem('muyu_window_zoom');if(s)currentZoom=Math.max(.5,Math.min(2,parseFloat(s)));applyZoom();}}
     function saveZoom(){if(window.utools)utools.dbStorage.setItem('muyu_window_zoom',currentZoom.toString());}
-    function applyZoom(){document.body.style.zoom=currentZoom;}
+    const menuIcon=document.querySelector('.menu-icon');
+    const menuTitle=document.querySelector('.menu-title');
+    function applyZoom(){
+      document.body.style.zoom=currentZoom;
+      const hide=currentZoom<0.75;
+      menuIcon.style.display=hide?'none':'';
+      menuTitle.style.display=hide?'none':'';
+    }
     resizeHandle.addEventListener('mousedown',(e)=>{e.preventDefault();isResizing=true;startX=e.screenX;startY=e.screenY;startWidth=window.innerWidth;startHeight=window.innerHeight;document.body.style.cursor='nwse-resize';document.body.style.userSelect='none';});
     document.addEventListener('mousemove',(e)=>{if(!isResizing)return;const w=Math.max(110,startWidth+e.screenX-startX),h=Math.max(170,startHeight+e.screenY-startY);currentZoom=Math.max(.5,Math.min(2,Math.min(w/BASE_WIDTH,h/BASE_HEIGHT)));applyZoom();if(window.utools)utools.sendToParent('resize-window',{width:w,height:h});});
     document.addEventListener('mouseup',()=>{if(isResizing){isResizing=false;document.body.style.cursor='';document.body.style.userSelect='';saveZoom();}});

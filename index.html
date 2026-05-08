@@ -444,6 +444,13 @@
         </div>
         <div class="setting-row">
           <div>
+            <div class="setting-label">显示木鱼</div>
+            <div class="setting-desc">关闭后只显示倒计时</div>
+          </div>
+          <div class="toggle" id="fishToggle"></div>
+        </div>
+        <div class="setting-row">
+          <div>
             <div class="setting-label">显示倒计时</div>
             <div class="setting-desc">在木鱼下方显示倒计时模块</div>
           </div>
@@ -572,7 +579,7 @@
           width: 220,
           height: 320,
           minWidth: 110,
-          minHeight: 160,
+          minHeight: 60,
           frame: false,
           transparent: true,
           alwaysOnTop: true,
@@ -606,6 +613,10 @@
             fishWindow.setOpacity(opacity);
           } catch (e) {
             console.warn('设置初始透明度失败:', e);
+          }
+
+          if (settings.showFish === false) {
+            try { fishWindow.setSize(220, 72); } catch(e) {}
           }
 
           document.getElementById('closeBtn').style.display = 'inline-block';
@@ -917,6 +928,20 @@
       }
 
       saveSettings();
+    });
+
+    // 木鱼开关
+    const fishToggle = document.getElementById('fishToggle');
+    if (settings.showFish !== false) {
+      fishToggle.classList.add('active');
+    }
+    fishToggle.addEventListener('click', () => {
+      fishToggle.classList.toggle('active');
+      settings.showFish = fishToggle.classList.contains('active');
+      saveSettings();
+      if (isWindowValid(fishWindow)) {
+        try { fishWindow.setSize(220, settings.showFish ? 340 : 72); } catch(e) {}
+      }
     });
 
     // 倒计时开关
